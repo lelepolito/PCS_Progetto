@@ -1,0 +1,7 @@
+Polyhedron: db/tetrahedron
+NumCell3Ds: 1
+Cell3DsId: 0 
+NumVertices: 4, NumEdges: 6, NumFaces: 4
+Vertex IDs: 0 1 2 3 
+Edge IDs: 0 1 2 3 4 5 
+Face IDs: 0 1 2 3 
