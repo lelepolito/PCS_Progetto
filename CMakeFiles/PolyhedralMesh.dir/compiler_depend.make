@@ -1136,7 +1136,18 @@ CMakeFiles/PolyhedralMesh.dir/main.cpp.o: main.cpp \
   /usr/include/c++/11/bits/allocated_ptr.h \
   /usr/include/c++/11/bits/list.tcc \
   src/Utils.hpp \
-  src/struttura.hpp
+  src/struttura.hpp \
+  /usr/include/c++/11/iomanip \
+  /usr/include/c++/11/locale \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
+  /usr/include/c++/11/bits/unique_ptr.h \
+  /usr/include/c++/11/bits/quoted_string.h
 
 CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o: src/Utils.cpp \
   /usr/include/stdc-predef.h \
@@ -1705,7 +1716,18 @@ CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o: src/Utils.cpp \
   /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
   /usr/include/c++/11/bits/fstream.tcc \
-  /usr/include/c++/11/iostream
+  /usr/include/c++/11/iostream \
+  /usr/include/c++/11/iomanip \
+  /usr/include/c++/11/locale \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
+  /usr/include/c++/11/bits/unique_ptr.h \
+  /usr/include/c++/11/bits/quoted_string.h
 
 CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o: src/struttura.cpp \
   /usr/include/stdc-predef.h \
@@ -2272,6 +2294,20 @@ CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o: src/struttura.cpp \
 
 src/Utils.cpp:
 
+/usr/include/c++/11/bits/quoted_string.h:
+
+/usr/include/c++/11/bits/unique_ptr.h:
+
+/usr/include/c++/11/bits/locale_facets_nonio.tcc:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h:
+
+/usr/include/c++/11/ctime:
+
+/usr/include/c++/11/locale:
+
+/usr/include/c++/11/iomanip:
+
 src/Utils.hpp:
 
 main.cpp:
@@ -2367,6 +2403,8 @@ main.cpp:
 /usr/include/c++/11/cerrno:
 
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h:
 
 /usr/include/c++/11/bits/basic_ios.h:
 
@@ -2567,6 +2605,8 @@ main.cpp:
 /usr/include/c++/11/debug/assertions.h:
 
 /usr/include/c++/11/bits/ios_base.h:
+
+/usr/include/c++/11/bits/locale_facets_nonio.h:
 
 /usr/include/eigen3/Eigen/src/SparseLU/SparseLU_gemm_kernel.h:
 
@@ -2809,6 +2849,8 @@ ExportParaview/UCDUtilities.cpp:
 /usr/include/eigen3/Eigen/src/SparseCore/SparseCompressedBase.h:
 
 /usr/include/eigen3/Eigen/src/plugins/BlockMethods.h:
+
+/usr/include/libintl.h:
 
 /usr/include/c++/11/bits/char_traits.h:
 
@@ -3195,6 +3237,8 @@ src/struttura.cpp:
 /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h:
 
 /usr/include/eigen3/Eigen/src/SparseLU/SparseLU_kernel_bmod.h:
+
+/usr/include/c++/11/bits/locale_conv.h:
 
 /usr/include/eigen3/Eigen/src/Core/Random.h:
 

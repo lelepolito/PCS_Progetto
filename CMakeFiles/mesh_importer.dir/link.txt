@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/mesh_importer.dir/main.cpp.o CMakeFiles/mesh_importer.dir/utils.cpp.o CMakeFiles/mesh_importer.dir/struttura.cpp.o -o mesh_importer 

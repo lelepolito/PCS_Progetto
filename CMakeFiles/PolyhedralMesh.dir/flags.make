@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/appuser/Data/sisto/src -I/home/appuser/Data/sisto/ExportParaview -isystem /usr/include/eigen3
+CXX_INCLUDES = -I/home/appuser/Data/PCS_Progetto/src -I/home/appuser/Data/PCS_Progetto/ExportParaview -isystem /usr/include/eigen3
 
 CXX_FLAGS = -fPIC -DGTEST_HAS_PTHREAD=1 -std=gnu++20
 

@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/appuser/Data/sisto
+CMAKE_SOURCE_DIR = /home/appuser/Data/PCS_Progetto
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/appuser/Data/sisto
+CMAKE_BINARY_DIR = /home/appuser/Data/PCS_Progetto
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -116,14 +116,14 @@ src/clean:
 CMakeFiles/PolyhedralMesh.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PolyhedralMesh.dir/build.make CMakeFiles/PolyhedralMesh.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PolyhedralMesh.dir/build.make CMakeFiles/PolyhedralMesh.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/appuser/Data/sisto/CMakeFiles --progress-num=1,2,3,4,5 "Built target PolyhedralMesh"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/appuser/Data/PCS_Progetto/CMakeFiles --progress-num=1,2,3,4,5 "Built target PolyhedralMesh"
 .PHONY : CMakeFiles/PolyhedralMesh.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/PolyhedralMesh.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/appuser/Data/sisto/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/appuser/Data/PCS_Progetto/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/PolyhedralMesh.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/appuser/Data/sisto/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/appuser/Data/PCS_Progetto/CMakeFiles 0
 .PHONY : CMakeFiles/PolyhedralMesh.dir/rule
 
 # Convenience name for target.

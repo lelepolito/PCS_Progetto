@@ -8,10 +8,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/appuser/Data/sisto/ExportParaview/UCDUtilities.cpp" "CMakeFiles/PolyhedralMesh.dir/ExportParaview/UCDUtilities.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/ExportParaview/UCDUtilities.cpp.o.d"
-  "/home/appuser/Data/sisto/main.cpp" "CMakeFiles/PolyhedralMesh.dir/main.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/main.cpp.o.d"
-  "/home/appuser/Data/sisto/src/Utils.cpp" "CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o.d"
-  "/home/appuser/Data/sisto/src/struttura.cpp" "CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o.d"
+  "/home/appuser/Data/PCS_Progetto/ExportParaview/UCDUtilities.cpp" "CMakeFiles/PolyhedralMesh.dir/ExportParaview/UCDUtilities.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/ExportParaview/UCDUtilities.cpp.o.d"
+  "/home/appuser/Data/PCS_Progetto/main.cpp" "CMakeFiles/PolyhedralMesh.dir/main.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/main.cpp.o.d"
+  "/home/appuser/Data/PCS_Progetto/src/Utils.cpp" "CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/src/Utils.cpp.o.d"
+  "/home/appuser/Data/PCS_Progetto/src/struttura.cpp" "CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o" "gcc" "CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o.d"
   )
 
 # Targets to which this target links.

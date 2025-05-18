@@ -1,6 +1,6 @@
 CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o: \
- /home/appuser/Data/sisto/src/struttura.cpp /usr/include/stdc-predef.h \
- /usr/include/c++/11/string \
+ /home/appuser/Data/PCS_Progetto/src/struttura.cpp \
+ /usr/include/stdc-predef.h /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -138,8 +138,8 @@ CMakeFiles/PolyhedralMesh.dir/src/struttura.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /home/appuser/Data/sisto/src/struttura.hpp /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
+ /home/appuser/Data/PCS_Progetto/src/struttura.hpp \
+ /usr/include/c++/11/vector /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
  /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/map \

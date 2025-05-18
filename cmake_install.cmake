@@ -1,4 +1,4 @@
-# Install script for directory: /home/appuser/Data/sisto
+# Install script for directory: /home/appuser/Data/PCS_Progetto
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,8 +44,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/appuser/Data/sisto/src/cmake_install.cmake")
-  include("/home/appuser/Data/sisto/ExportParaview/cmake_install.cmake")
+  include("/home/appuser/Data/PCS_Progetto/src/cmake_install.cmake")
+  include("/home/appuser/Data/PCS_Progetto/ExportParaview/cmake_install.cmake")
 
 endif()
 
@@ -57,5 +57,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/appuser/Data/sisto/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/appuser/Data/PCS_Progetto/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

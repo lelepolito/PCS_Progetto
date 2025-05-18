@@ -1,4 +1,4 @@
-# Install script for directory: /home/appuser/Data/sisto/ExportParaview
+# Install script for directory: /home/appuser/Data/PCS_Progetto/ExportParaview
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

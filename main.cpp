@@ -8,7 +8,7 @@
 #include "UCDUtilities.hpp"
 #include "Utils.hpp"
 #include "struttura.hpp"
-
+#include <iomanip>
 using namespace std;
 
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
@@ -78,6 +78,8 @@ int main() {
         cerr << "ImportCell3Ds fallito per " << basename << endl;
         return EXIT_FAILURE;
     }
+
+
     if (PolygonalLibrary::Centralize(mesh)) {
         cout << "Mesh centrato." << endl;
     } else {
@@ -88,42 +90,29 @@ int main() {
     } else {
         cout << "Mesh non normalizzato." << endl;
     }
-    // Dump cell0, cell1, cell2
-    if (!dumpCSV(basename + "_vertices.csv", "cell0.txt")) return EXIT_FAILURE;
-    if (!dumpCSV(basename + "_edges.csv",    "cell1.txt")) return EXIT_FAILURE;
-    if (!dumpCSV(basename + "_faces.csv",    "cell2.txt")) return EXIT_FAILURE;
-
-    // popoliamo il file relativo alle celle 3D
-    ofstream f3("cell3.txt");
-    if (!f3.is_open()) {
-        cerr << "Impossibile creare cell3.txt" << endl;
+    if (!PolygonalLibrary::Triangulate(mesh, b, c)) {
+        cerr << "Triangulation fallita per " << basename << endl;
         return EXIT_FAILURE;
+    } else {
+        cout << "Triangulation riuscita." << endl;
     }
-    f3 << "Polyhedron: " << basename << "\n";
-    f3 << "NumCell3Ds: " << mesh.NumCell3Ds << "\n";
-    f3 << "Cell3DsId: ";
-    for (auto id : mesh.Cell3DsId) f3 << id << " ";
-    f3 << "\nNumVertices: "  << mesh.Cell3DsNumVertices[0]
-       << ", NumEdges: "  << mesh.Cell3DsNumEdges[0]
-       << ", NumFaces: "  << mesh.Cell3DsNumFaces[0] << "\n";
-    f3 << "Vertex IDs: ";
-    for (auto vid : mesh.Cell3DsVertices[0]) f3 << vid << " ";
-    f3 << "\nEdge IDs: ";
-    for (auto eid : mesh.Cell3DsEdges[0]) f3 << eid << " ";
-    f3 << "\nFace IDs: ";
-    for (auto fid : mesh.Cell3DsFaces[0]) f3 << fid << " ";
-    f3 << endl;
-    Gedim::UCDUtilities utilities;
+        if (PolygonalLibrary::Normalize(mesh)) {
+        cout << "Mesh normalizzato." << endl;
+    } else {
+        cout << "Mesh non normalizzato." << endl;
+    }
 
+    Gedim::UCDUtilities utilities;
+    Export_Polyhedron(mesh);
     utilities.ExportPoints("./Cell0Ds.inp",
                            mesh.Cell0DsCoordinates);
 
     utilities.ExportSegments("./Cell1Ds.inp",
                              mesh.Cell0DsCoordinates,
                              mesh.Cell1DsExtrema);
-    utilities.ExportPolygons("./Cell2Ds.inp",
+    /*utilities.ExportPolygons("./Cell2Ds.inp",
                               mesh.Cell0DsCoordinates,
-                              mesh.Cell2DsVertices);
+                              mesh.Cell2DsVertices);*/
     cout << "File generati: cell0.txt, cell1.txt, cell2.txt, cell3.txt" << endl;
     return EXIT_SUCCESS;
 }
