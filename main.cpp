@@ -110,9 +110,9 @@ int main() {
     utilities.ExportSegments("./Cell1Ds.inp",
                              mesh.Cell0DsCoordinates,
                              mesh.Cell1DsExtrema);
-    /*utilities.ExportPolygons("./Cell2Ds.inp",
+    utilities.ExportPolygons("./Cell2Ds.inp",
                               mesh.Cell0DsCoordinates,
-                              mesh.Cell2DsVertices);*/
+                              mesh.Cell2DsVertices);
     cout << "File generati: cell0.txt, cell1.txt, cell2.txt, cell3.txt" << endl;
     return EXIT_SUCCESS;
 }

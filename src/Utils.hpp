@@ -15,6 +15,7 @@ bool ImportCell1Ds(PolyhedralMesh& mesh, const std::string& filename);
 bool ImportCell2Ds(PolyhedralMesh& mesh, const std::string& filename);
 bool Centralize(PolyhedralMesh& mesh);
 bool Normalize(PolyhedralMesh& mesh);
+void CreateTriFace(PolyhedralMesh& mesh);
 void Export_Polyhedron(PolyhedralMesh& P);
 // import di comodo che accetta il basename (es. "cube")
 // e legge "<basename>_vertices.csv", "<basename>_edges.csv", "<basename>_faces.csv"
