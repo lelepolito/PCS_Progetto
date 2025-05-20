@@ -24,69 +24,77 @@ double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 }
 void CreateTriFace(PolyhedralMesh& mesh)
 {
-    unsigned int id;
+    unsigned int id = 0;
     mesh.NumCell2Ds = 0;
     mesh.Cell2DsId.clear();
     mesh.Cell2DsVertices.clear();
     mesh.Cell2DsEdges.clear();
     mesh.Cell2DsMarker.clear();
-    cout << 1 << endl;
     vector<unsigned int> VecIDEdges;
+    vector<unsigned int> VecIDVertices;  
     VecIDEdges.reserve(10);
-
-    vector<unsigned int> VecIDVertices; 
     VecIDVertices.reserve(10);    
-    for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
+    bool found = false;
+
+    for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
         VecIDVertices.clear();
         VecIDEdges.clear();
         VecIDVertices.push_back(i);
-        cout << VecIDVertices[0] << endl;
-        for (size_t j = 0; j < mesh.NumCell1Ds; ++j){         
+        for (unsigned int j = 0; j < mesh.NumCell1Ds; ++j){         
             if (i == mesh.Cell1DsExtrema(0, j)){
-
                 VecIDVertices.push_back(mesh.Cell1DsExtrema(1, j));
-                VecIDEdges.push_back(j);
-                cout <<j;}
+                VecIDEdges.push_back(j);}
             if (i == mesh.Cell1DsExtrema(1, j)){
                 VecIDVertices.push_back(mesh.Cell1DsExtrema(0, j));
-                VecIDEdges.push_back(j);
-                cout << j;}
-        }
-        cout << VecIDVertices[0] << endl;
-        for (size_t j = 1; j < VecIDVertices.size() ; ++j){
-            cout << "ID " << endl; ;
-            for (size_t k = 1; k < VecIDVertices.size() ; ++k){
-                cout << "ID " << VecIDVertices[j] << " " <<VecIDVertices[k] << endl;
+                VecIDEdges.push_back(j);}
+            }
+        cout << VecIDVertices[0]<<"/"<<mesh.NumCell0Ds << "%" << endl;
+        for (size_t j = 1; j < VecIDVertices.size() - 1 ; ++j){
+            for (size_t k = j+1; k < VecIDVertices.size() ; ++k){
                 for (size_t l = 0; l < mesh.NumCell1Ds; ++l){
-                        cout << mesh.Cell1DsExtrema(0, l) << " " << mesh.Cell1DsExtrema(1, l) << endl;                    
-                    for (size_t m=0; m < mesh.NumCell2Ds; ++m){
-
-                        cout << VecIDVertices[j] << " " << VecIDVertices[k] << endl;                        
-                        if (mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j]){
-                            cout << "La faccia è già presente" << endl;
-                            break;}
-                        else if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
+                    if (mesh.NumCell2Ds == 0){
+                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
                             mesh.Cell2DsId.push_back(id);
                             mesh.NumCell2Ds++;
-                            cout << "Creato ID " << id << endl;
-                            mesh.Cell2DsVertices.push_back({VecIDVertices[j],l, VecIDVertices[k]});
-                            mesh.Cell2DsEdges.push_back({VecIDEdges[j],l, VecIDEdges[k]});
+                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
+                            mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
                             mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
                             id++;}
-                        else if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j]){
+                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j]){
                             mesh.Cell2DsId.push_back(id);
                             mesh.NumCell2Ds++;
-                            cout << "Creato ID " << id << endl;
-                            mesh.Cell2DsVertices.push_back({VecIDVertices[k],l, VecIDVertices[j]});
-                            mesh.Cell2DsEdges.push_back({VecIDEdges[k],l, VecIDEdges[j]});
+                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
+                            mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
                             mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
                             id++;}
                     }
+                    for (size_t m=0; m < mesh.NumCell2Ds; ++m){
+                        found = false;                       
+                        if (mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j] ||
+                            mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
+                            mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
+                            mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
+                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
+                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j]){
+                            found = true;
+                            break;}}
+                    if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k] && found == false){
+                        mesh.Cell2DsId.push_back(id);
+                        mesh.NumCell2Ds++;
+                        mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
+                        mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
+                        mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                        id++;
+                        found = true;}
+                    if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j] && found == false){
+                        mesh.Cell2DsId.push_back(id);
+                        mesh.NumCell2Ds++;
+                        mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
+                        mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
+                        mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                        id++;
+                        found = true;}
+                    
                 }
             }
         }   
@@ -202,7 +210,7 @@ void Export_Polyhedron(PolyhedralMesh& P)
 
 bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c)
 {
-    if (b > 0 && c == 0 || c > 0 && b == 0) {
+    if (b > 1 && c == 0 || c > 1 && b == 0) {
         unsigned int d = b + c;
         double d_d = d;
         unsigned int numlati = mesh.NumCell1Ds;
@@ -238,37 +246,18 @@ bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c)
                         GetorCreateEdge(mesh,x,y,l);
                     }
                 }
-
             }
         }     
-         Eigen::IOFormat format(4, 0, ", ", "\n", "[", "]"); 
 
-cout << mesh.NumCell1Ds << endl;
-cout << mesh.Cell1DsId.size() << endl;
-for (int i = 0;i < numlati; ++i) {
-    mesh.Cell1DsId.erase(mesh.Cell1DsId.begin() + i);
-    mesh.NumCell1Ds--;
-}
-for (unsigned int i = 0;i < mesh.NumCell1Ds; ++i){
+        for (int i = 0;i < numlati; ++i) {
+            mesh.Cell1DsId.erase(mesh.Cell1DsId.begin() + i);
+            mesh.NumCell1Ds--;
+        }
+        for (unsigned int i = 0;i < mesh.NumCell1Ds; ++i){
             mesh.Cell1DsId[i] = i ;
-}
-    
-
-/*for (int i = 0;i < mesh.NumCell1Ds; ++i) {
-    cout << mesh.Cell1DsId[i] << " ";
-    }
-cout << endl;
-
-cout << numlati << endl;
-cout << mesh.NumCell1Ds << endl;
-cout << mesh.Cell1DsId.size() << endl;
-        //mesh.Cell1DsExtrema.resize(2, mesh.NumCell1Ds);
-//mesh.Cell1DsId.resize(mesh.NumCell1Ds);*/
-//cout << endl;
-        //mesh.Cell1DsExtrema.conservativeResize(2,mesh.NumCell1Ds);
+        }
         mesh.Cell1DsExtrema = mesh.Cell1DsExtrema.rightCols(mesh.NumCell1Ds).eval();
-        //cout << mesh.Cell1DsExtrema.format(format);
-    CreateTriFace(mesh);
+        CreateTriFace(mesh);
     }
     return true;
 }
@@ -303,21 +292,20 @@ bool Centralize(PolyhedralMesh& mesh)
 }
 bool Normalize(PolyhedralMesh& mesh)
 {
-    mesh.Cell0DsCoordinates = mesh.Cell0DsCoordinates * 1e5; // visto che i punti sono molto vicini a 0 per evitare problemi di cancellazione numerica li riscalo
+    //mesh.Cell0DsCoordinates = mesh.Cell0DsCoordinates * 1e5; 
     if (mesh.NumCell0Ds == 0) return false;
     double norm;
     for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
         norm = sqrt(
             mesh.Cell0DsCoordinates(0, i) * mesh.Cell0DsCoordinates(0, i) +
             mesh.Cell0DsCoordinates(1, i) * mesh.Cell0DsCoordinates(1, i) +
-            mesh.Cell0DsCoordinates(2, i) * mesh.Cell0DsCoordinates(2, i)
-        );
+            mesh.Cell0DsCoordinates(2, i) * mesh.Cell0DsCoordinates(2, i)  );
         mesh.Cell0DsCoordinates(0, i) /= norm;
         mesh.Cell0DsCoordinates(1, i) /= norm;
         mesh.Cell0DsCoordinates(2, i) /= norm;
-        mesh.Cell0DsCoordinates(0, i) *= 1e2;
-        mesh.Cell0DsCoordinates(1, i) *= 1e2;
-        mesh.Cell0DsCoordinates(2, i) *= 1e2;
+        //mesh.Cell0DsCoordinates(0, i) *= 1e2;
+        //mesh.Cell0DsCoordinates(1, i) *= 1e2;
+        //mesh.Cell0DsCoordinates(2, i) *= 1e2;
     }
     return true;
 }
