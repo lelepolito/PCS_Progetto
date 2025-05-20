@@ -22,7 +22,7 @@ double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2));
 }
-void CreateTriFace(PolyhedralMesh& mesh)
+void CreateTriFace(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c)
 {
     unsigned int id = 0;
     mesh.NumCell2Ds = 0;
@@ -35,6 +35,12 @@ void CreateTriFace(PolyhedralMesh& mesh)
     VecIDEdges.reserve(10);
     VecIDVertices.reserve(10);    
     bool found = false;
+    int faces = 0;
+    int T = 0;
+    T = b*b + b*c + c*c;
+    if (q == 3){faces = 4*T;}
+    if (q == 4){faces = 8*T;}
+    if (q == 5){faces = 20*T;}
 
     for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
         VecIDVertices.clear();
@@ -48,28 +54,12 @@ void CreateTriFace(PolyhedralMesh& mesh)
                 VecIDVertices.push_back(mesh.Cell1DsExtrema(0, j));
                 VecIDEdges.push_back(j);}
             }
-        cout << VecIDVertices[0]<<"/"<<mesh.NumCell0Ds << "%" << endl;
-        for (size_t j = 1; j < VecIDVertices.size() - 1 ; ++j){
-            for (size_t k = j+1; k < VecIDVertices.size() ; ++k){
-                for (size_t l = 0; l < mesh.NumCell1Ds; ++l){
-                    if (mesh.NumCell2Ds == 0){
-                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
-                            mesh.Cell2DsId.push_back(id);
-                            mesh.NumCell2Ds++;
-                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
-                            mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
-                            mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                            id++;}
-                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j]){
-                            mesh.Cell2DsId.push_back(id);
-                            mesh.NumCell2Ds++;
-                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
-                            mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
-                            mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                            id++;}
-                    }
-                    for (size_t m=0; m < mesh.NumCell2Ds; ++m){
-                        found = false;                       
+        if (mesh.NumCell2Ds < faces){        
+            cout << VecIDVertices[0]<<"/"<<mesh.NumCell0Ds << "%" << endl;
+            for (unsigned int j = 1; j < VecIDVertices.size() - 1 ; ++j){
+                for (unsigned int k = j+1; k < VecIDVertices.size() ; ++k){
+                    found = false;
+                    for (unsigned int m=0; m < mesh.NumCell2Ds; ++m){                       
                         if (mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j] ||
                             mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
                             mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
@@ -77,27 +67,49 @@ void CreateTriFace(PolyhedralMesh& mesh)
                             mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
                             mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j]){
                             found = true;
+                            //cout << "Face already present" << endl;
                             break;}}
-                    if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k] && found == false){
-                        mesh.Cell2DsId.push_back(id);
-                        mesh.NumCell2Ds++;
-                        mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
-                        mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
-                        mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                        id++;
-                        found = true;}
-                    if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j] && found == false){
-                        mesh.Cell2DsId.push_back(id);
-                        mesh.NumCell2Ds++;
-                        mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
-                        mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
-                        mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                        id++;
-                        found = true;}
-                    
-                }
+                    if (found == false){
+                        for (unsigned int l = 0; l < mesh.NumCell1Ds; ++l){
+                            if (mesh.NumCell2Ds == 0){
+                                if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
+                                    mesh.Cell2DsId.push_back(id);
+                                    mesh.NumCell2Ds++;
+                                    mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
+                                    mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
+                                    mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                                    id++;}
+                                if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j]){
+                                    mesh.Cell2DsId.push_back(id);
+                                    mesh.NumCell2Ds++;
+                                    mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
+                                    mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
+                                    mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                                    id++;}
+                            }
+                            if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k] && found == false){
+                                mesh.Cell2DsId.push_back(id);
+                                mesh.NumCell2Ds++;
+                                mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
+                                mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
+                                mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                                cout << "Face created " << id << endl;                        
+                                id++;
+                                found = true;}
+                            if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j] && found == false){
+                                mesh.Cell2DsId.push_back(id);
+                                mesh.NumCell2Ds++;
+                                mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
+                                mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
+                                mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
+                                cout << "Face created " << id << endl;
+                                id++;
+                                found = true;}
+                        }
+                    }
+                }   
             }
-        }   
+        }
     }
 }    
 
@@ -126,7 +138,7 @@ unsigned int GetorCreateVec(PolyhedralMesh& mesh,double& x, double& y, double& z
 {
     unsigned int id;
     vector<unsigned int>::iterator it;
-    for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
+    for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
         if (mesh.Cell0DsCoordinates(0, i) == x &&
             mesh.Cell0DsCoordinates(1, i) == y &&
             mesh.Cell0DsCoordinates(2, i) == z) {
@@ -208,7 +220,7 @@ void Export_Polyhedron(PolyhedralMesh& P)
 }
     
 
-bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c)
+bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c)
 {
     if (b > 1 && c == 0 || c > 1 && b == 0) {
         unsigned int d = b + c;
@@ -240,7 +252,7 @@ bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c)
 
             for (auto it = mesh.Cell2DsVertices[l].begin(); it != mesh.Cell2DsVertices[l].end(); ++it) {
                 for (auto it2 = mesh.Cell2DsVertices[l].begin(); it2 != mesh.Cell2DsVertices[l].end(); ++it2) {
-                    if (Distance(mesh, *it, *it2) <= (Lato/d_d + 0.1) && *it != *it2){ 
+                    if (Distance(mesh, *it, *it2) <= (Lato/d_d + 0.001 ) && *it != *it2){ 
                         unsigned int x = *it;
                         unsigned int y = *it2;
                         GetorCreateEdge(mesh,x,y,l);
@@ -257,7 +269,7 @@ bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c)
             mesh.Cell1DsId[i] = i ;
         }
         mesh.Cell1DsExtrema = mesh.Cell1DsExtrema.rightCols(mesh.NumCell1Ds).eval();
-        CreateTriFace(mesh);
+        CreateTriFace(mesh,p,q,b,c);
     }
     return true;
 }

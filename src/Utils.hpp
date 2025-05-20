@@ -15,11 +15,11 @@ bool ImportCell1Ds(PolyhedralMesh& mesh, const std::string& filename);
 bool ImportCell2Ds(PolyhedralMesh& mesh, const std::string& filename);
 bool Centralize(PolyhedralMesh& mesh);
 bool Normalize(PolyhedralMesh& mesh);
-void CreateTriFace(PolyhedralMesh& mesh);
+void CreateTriFace(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c);
 void Export_Polyhedron(PolyhedralMesh& P);
 // import di comodo che accetta il basename (es. "cube")
 // e legge "<basename>_vertices.csv", "<basename>_edges.csv", "<basename>_faces.csv"
 bool ImportMesh(PolyhedralMesh& mesh, const std::string& basename);
-bool Triangulate(PolyhedralMesh& mesh, const int& b, const int& c);
+bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c);
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2);
 } // namespace PolygonalLibrary

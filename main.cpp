@@ -90,7 +90,7 @@ int main() {
     } else {
         cout << "Mesh non normalizzato." << endl;
     }
-    if (!PolygonalLibrary::Triangulate(mesh, b, c)) {
+    if (!PolygonalLibrary::Triangulate(mesh,p,q, b, c)) {
         cerr << "Triangulation fallita per " << basename << endl;
         return EXIT_FAILURE;
     } else {
