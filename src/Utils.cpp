@@ -6,11 +6,14 @@
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
+
 using namespace std;
 using namespace Eigen;
+
 namespace PolygonalLibrary 
 {
 
+    // calcola la distanza tra due punti 
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 {
     double x1 = mesh.Cell0DsCoordinates(0, id1);
@@ -22,30 +25,42 @@ double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2));
 }
+// funzione che prende tutti i punti e i lati ,controlla se chiudono un triangolo e lo crea dopo aver resettato tutti le facce del poliedro.
 void CreateTriFace(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c)
 {
+    // inizializza le variabili e le flag che servono per il ciclo e calcolare il numero di triangoli da creare
     unsigned int id = 0;
+    bool found = false; // flag per controllare se il triangolo è già presente 
+    unsigned int faces = 0;
+    unsigned int  T = 0;
+    T = b*b + b*c + c*c; //formula per calcolare il numero di triangoli da creare
+    if (q == 3){faces = 4*T;}
+    if (q == 4){faces = 8*T;}
+    if (q == 5){faces = 20*T;}   
+    //pulisco la mesh dal poligono che c'era prima della triangolazione
     mesh.NumCell2Ds = 0;
     mesh.Cell2DsId.clear();
     mesh.Cell2DsVertices.clear();
     mesh.Cell2DsEdges.clear();
-    mesh.Cell2DsMarker.clear();
+    // vettori dove aggiungere i punti e gli edge che sono connessi al punto generico
     vector<unsigned int> VecIDEdges;
     vector<unsigned int> VecIDVertices;  
-    VecIDEdges.reserve(10);
-    VecIDVertices.reserve(10);    
-    bool found = false;
-    int faces = 0;
-    int T = 0;
-    T = b*b + b*c + c*c;
-    if (q == 3){faces = 4*T;}
-    if (q == 4){faces = 8*T;}
-    if (q == 5){faces = 20*T;}
+   
 
+    // qui prende un punto generico
     for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
+
+        // se il numero di triangoli creati è uguale al numero di triangoli da creare esce
+        if (faces == mesh.NumCell2Ds){
+            break;
+        }
+        // Resetta i vettori 
         VecIDVertices.clear();
         VecIDEdges.clear();
+        VecIDEdges.reserve(10);
+        VecIDVertices.reserve(10);         
         VecIDVertices.push_back(i);
+        //Salva i punti che sono connessi al punto generico e l'id del lato
         for (unsigned int j = 0; j < mesh.NumCell1Ds; ++j){         
             if (i == mesh.Cell1DsExtrema(0, j)){
                 VecIDVertices.push_back(mesh.Cell1DsExtrema(1, j));
@@ -54,46 +69,30 @@ void CreateTriFace(PolyhedralMesh& mesh,const int& p,const int& q, const int& b,
                 VecIDVertices.push_back(mesh.Cell1DsExtrema(0, j));
                 VecIDEdges.push_back(j);}
             }
-        if (mesh.NumCell2Ds < faces){        
-            cout << VecIDVertices[0]<<"/"<<mesh.NumCell0Ds << "%" << endl;
-            for (unsigned int j = 1; j < VecIDVertices.size() - 1 ; ++j){
-                for (unsigned int k = j+1; k < VecIDVertices.size() ; ++k){
-                    found = false;
-                    for (unsigned int m=0; m < mesh.NumCell2Ds; ++m){                       
-                        if (mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
-                            mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j]){
-                            found = true;
-                            //cout << "Face already present" << endl;
-                            break;}}
-                    if (found == false){
-                        for (unsigned int l = 0; l < mesh.NumCell1Ds; ++l){
-                            if (mesh.NumCell2Ds == 0){
-                                if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
-                                    mesh.Cell2DsId.push_back(id);
-                                    mesh.NumCell2Ds++;
-                                    mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
-                                    mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
-                                    mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                                    id++;}
-                                if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j]){
-                                    mesh.Cell2DsId.push_back(id);
-                                    mesh.NumCell2Ds++;
-                                    mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
-                                    mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
-                                    mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                                    id++;}
-                            }
-                            if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k] && found == false){
+                
+        // for che legge il vettore (parto da 1 perchè il primo è il punto generico) e controlla se i punti sono connessi tra di loro
+        // se sono connessi crea il triangolo e lo aggiunge alla mesh
+        for (unsigned int j = 1; j < VecIDVertices.size() - 1 ; ++j){
+            for (unsigned int k = j+1; k < VecIDVertices.size() ; ++k){
+                found = false;
+                for (unsigned int m=0; m < mesh.NumCell2Ds; ++m){
+                    // controlla se il triangolo è già presente                        
+                    if (mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j] ||
+                        mesh.Cell2DsVertices[m][0] == VecIDVertices[0] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
+                        mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[k] ||
+                        mesh.Cell2DsVertices[m][0] == VecIDVertices[j] && mesh.Cell2DsVertices[m][1] == VecIDVertices[k] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
+                        mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[j] && mesh.Cell2DsVertices[m][2] == VecIDVertices[0] ||
+                        mesh.Cell2DsVertices[m][0] == VecIDVertices[k] && mesh.Cell2DsVertices[m][1] == VecIDVertices[0] && mesh.Cell2DsVertices[m][2] == VecIDVertices[j]){
+                        found = true;
+                        break;}}
+                if (found == false){ // se il triangolo non è presente lo crea rispettando l'ordine richiesto
+                    for (unsigned int l = 0; l < mesh.NumCell1Ds; ++l){
+                        if (mesh.NumCell2Ds == 0){
+                            if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k]){
                                 mesh.Cell2DsId.push_back(id);
                                 mesh.NumCell2Ds++;
                                 mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
                                 mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
-                                mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                                cout << "Face created " << id << endl;                        
                                 id++;
                                 found = true;}
                             if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j] && found == false){
@@ -101,29 +100,46 @@ void CreateTriFace(PolyhedralMesh& mesh,const int& p,const int& q, const int& b,
                                 mesh.NumCell2Ds++;
                                 mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
                                 mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
-                                mesh.Cell2DsMarker[0].push_back(id); // marker 0 per le facce create
-                                cout << "Face created " << id << endl;
-                                id++;
-                                found = true;}
+                                id++;}
                         }
+                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[j] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[k] && found == false){
+                            mesh.Cell2DsId.push_back(id);
+                            mesh.NumCell2Ds++;
+                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[j], VecIDVertices[k]});
+                            mesh.Cell2DsEdges.push_back({VecIDEdges[j-1],l, VecIDEdges[k-1]});
+                            id++;
+                            found = true;}
+                        if (mesh.Cell1DsExtrema(0, l) == VecIDVertices[k] && mesh.Cell1DsExtrema(1, l) == VecIDVertices[j] && found == false){
+                            mesh.Cell2DsId.push_back(id);
+                            mesh.NumCell2Ds++;
+                            mesh.Cell2DsVertices.push_back({VecIDVertices[0],VecIDVertices[k], VecIDVertices[j]});
+                            mesh.Cell2DsEdges.push_back({VecIDEdges[k-1],l, VecIDEdges[j-1]});
+                            id++;
+                            found = true;}
                     }
-                }   
-            }
+                }
+            }   
+            
         }
+
     }
+    cout << "100%" << endl;
 }    
 
 
-
+//funzione che controlla se l'edge è già presente nella mesh
+// se non lo è lo crea e restituisce il suo id
 int GetorCreateEdge(PolyhedralMesh& mesh,unsigned int x,unsigned int y, int l)
 {
     unsigned int id;
-    for (size_t i = 0; i < mesh.NumCell1Ds ; ++i) {
+
+    for (unsigned int i = 0; i < mesh.NumCell1Ds ; ++i) {
         if ((mesh.Cell1DsExtrema(0, i) == x && mesh.Cell1DsExtrema(1, i) == y) ||
             (mesh.Cell1DsExtrema(0, i) == y && mesh.Cell1DsExtrema(1, i) == x)) {
             return mesh.Cell1DsId[i];
         }
     }
+    
     id = mesh.NumCell1Ds;
     mesh.NumCell1Ds++;
     mesh.Cell1DsId.push_back(id);
@@ -131,13 +147,16 @@ int GetorCreateEdge(PolyhedralMesh& mesh,unsigned int x,unsigned int y, int l)
     mesh.Cell1DsExtrema(0, id) = x;
     mesh.Cell1DsExtrema(1, id) = y;
     mesh.Cell1DsMarker[0].push_back(id); // marker 0 per gli edge creati 
+    
     return id;
 }
-
-unsigned int GetorCreateVec(PolyhedralMesh& mesh,double& x, double& y, double& z, unsigned int l)
+// funzione che controlla se il punto è già presente nella mesh
+// se non lo è lo crea e restituisce il suo id
+unsigned int GetorCreatePoint(PolyhedralMesh& mesh,double& x, double& y, double& z, unsigned int l)
 {
     unsigned int id;
     vector<unsigned int>::iterator it;
+    
     for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
         if (mesh.Cell0DsCoordinates(0, i) == x &&
             mesh.Cell0DsCoordinates(1, i) == y &&
@@ -148,6 +167,7 @@ unsigned int GetorCreateVec(PolyhedralMesh& mesh,double& x, double& y, double& z
                 return mesh.Cell0DsId[i];
         }
     }
+    
     id = mesh.NumCell0Ds;
     mesh.NumCell0Ds++;
     mesh.Cell0DsId.push_back(id);
@@ -157,6 +177,7 @@ unsigned int GetorCreateVec(PolyhedralMesh& mesh,double& x, double& y, double& z
     mesh.Cell0DsCoordinates(2, id) = z;
     mesh.Cell2DsVertices[l].push_back({id});
     mesh.Cell0DsMarker[0].push_back(id); // marker 0 per i punti creati
+    
     return id;
 }
 void Export_Polyhedron(PolyhedralMesh& P)
@@ -219,65 +240,159 @@ void Export_Polyhedron(PolyhedralMesh& P)
     ofile4.close();
 }
     
-
+// funzione che triangola il poliedro 
 bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c)
 {
-    if (b > 1 && c == 0 || c > 1 && b == 0) {
-        unsigned int d = b + c;
-        double d_d = d;
+    if ((b > 1 && c == 0) || (c > 1 && b == 0) || (b == c)) {
+        unsigned int d ;        
+        if (b==c){
+            d = b;
+        }
+        else{
+            d = b + c;
+        }
+        double eps = 0.00001; // tolleranza per la distanza tra i punti
+        unsigned int vert ;
+        unsigned int  T = 0;
+        T = d*d; 
+        if (q == 3){vert = 2*T +2;}
+        if (q == 4){vert = 4*T +2;}
+        if (q == 5){vert = 10*T +2;} 
+        double d_d = d; // conversione in double per il calcolo delle coordinate baricentriche,per evitare la divisione intera
+        unsigned int id;
+        vector<vector<unsigned int> > Tag; // qui salvo i punti creati con le loro coordinate baricentriche
+        vector<unsigned int> TagVec;
+        vector<unsigned int> Proximity; // vettore che contiene i punti che sono vicini agli spigoli del triangolo
+        unsigned int red; // questi sono i punti della triangolazione I Classe su una faccia triangolare
+        for (unsigned int i = 0; i < d+1; ++i) {
+            red += i;
+        }
         unsigned int numlati = mesh.NumCell1Ds;
         MatrixXd A(3,1), B(3,1), C(3,1),R(3,1);
-        double Lato = 0.0;
+        double Lato = 0.0; // lunghezza del lato del triangolo
         for (int l=0; l<mesh.NumCell2Ds; ++l) {
             
-            vector<unsigned int> vec = mesh.Cell2DsVertices[l];
-            vector<unsigned int> vec2 = mesh.Cell2DsEdges[l];
-            Lato = Distance(mesh, vec[0], vec[1]);
-            
-            A = mesh.Cell0DsCoordinates.col(vec[0]);
-            B = mesh.Cell0DsCoordinates.col(vec[1]);
-            C = mesh.Cell0DsCoordinates.col(vec[2]);            
-            
-            for (int i = 0; i <= d; ++i) {
-                for (int j = 0; j <= d-i; ++j) {
-                    for (int k = 0; k <= d-j-i; ++k) {
+
+            Lato = Distance(mesh, mesh.Cell2DsVertices[l][0], mesh.Cell2DsVertices[l][1]);
+
+            A = mesh.Cell0DsCoordinates.col(mesh.Cell2DsVertices[l][0]);
+            B = mesh.Cell0DsCoordinates.col(mesh.Cell2DsVertices[l][1]);
+            C = mesh.Cell0DsCoordinates.col(mesh.Cell2DsVertices[l][2]);            
+            //creazione dei punti per la triangolazione I Classe 
+            for (unsigned int i = 0; i <= d; ++i) {
+                for (unsigned int j = 0; j <= d-i; ++j) {
+                    for (unsigned int k = 0; k <= d-j-i; ++k) {
                         if (i + j + k == d){
                         R = (i/d_d)*A + (j/d_d)*B + (k/d_d)*C;
-                        GetorCreateVec(mesh, R(0,0),R(1,0) , R(2,0),l);
+                        id = GetorCreatePoint(mesh, R(0,0),R(1,0),R(2,0),l);
+                        TagVec.push_back(id);
+                        TagVec.push_back(i);
+                        TagVec.push_back(j);
+                        TagVec.push_back(k);
+                        Tag.push_back(TagVec);
+                        TagVec.clear();
+                        TagVec.reserve(4);                        
                         }
                     }
-
                 }
             }
-
-            for (auto it = mesh.Cell2DsVertices[l].begin(); it != mesh.Cell2DsVertices[l].end(); ++it) {
-                for (auto it2 = mesh.Cell2DsVertices[l].begin(); it2 != mesh.Cell2DsVertices[l].end(); ++it2) {
-                    if (Distance(mesh, *it, *it2) <= (Lato/d_d + 0.001 ) && *it != *it2){ 
-                        unsigned int x = *it;
-                        unsigned int y = *it2;
-                        GetorCreateEdge(mesh,x,y,l);
+            if (b !=c){
+                for (auto it = mesh.Cell2DsVertices[l].begin(); it != mesh.Cell2DsVertices[l].end(); ++it) {
+                    for (auto it2 = mesh.Cell2DsVertices[l].begin(); it2 != mesh.Cell2DsVertices[l].end(); ++it2) {
+                        if (Distance(mesh, *it, *it2) <= (Lato/d_d + eps) && *it != *it2){ 
+                            unsigned int x = *it;
+                            unsigned int y = *it2;
+                            GetorCreateEdge(mesh,x,y,l);
+                        }
                     }
                 }
             }
-        }     
+            if ( b == c){
+                //funzione che fa i midpoint
+                unsigned int i = 0;
+                unsigned int j = 0;
+                double x = 0.0;
+                double y = 0.0;
+                double z = 0.0;
+                for (auto it = Tag.begin(); it != Tag.end(); ++it) {
+                    for (auto it2 = Tag.begin() ; it2 != Tag.end(); ++it2) {
+                        if ((Distance(mesh, (*it)[0], (*it2)[0]) <= (Lato/d_d + eps)) && (*it)[0] != (*it2)[0]){
+                            unsigned int id1 = (*it)[0];
+                            unsigned int id2 = (*it2)[0];
+                            // Seleziono solo i punti che fanno parte dei triangoli rossi per creare i midpoint della triangolazione II Classe
+                            for (auto it3 = Tag.begin(); it3 != Tag.end(); ++it3) {
+                                unsigned int id3 = (*it3)[0];
+                                if ((Distance(mesh, (*it3)[0], (*it2)[0]) <= (Lato/d_d + eps)) && (Distance(mesh, (*it3)[0], (*it)[0]) <= (Lato/d_d + 0.000001)) && (*it3)[0] != (*it2)[0] && (*it3)[0] != (*it)[0]){                    
+                                    x = (mesh.Cell0DsCoordinates(0, id1) + mesh.Cell0DsCoordinates(0, id2) + mesh.Cell0DsCoordinates(0, id3)) / 3;
+                                    y = (mesh.Cell0DsCoordinates(1, id1) + mesh.Cell0DsCoordinates(1, id2) + mesh.Cell0DsCoordinates(1, id3)) / 3;
+                                    z = (mesh.Cell0DsCoordinates(2, id1) + mesh.Cell0DsCoordinates(2, id2) + mesh.Cell0DsCoordinates(2, id3)) / 3;
+                                    GetorCreatePoint(mesh,x,y,z,l);
+                                    
+                                }
+                            }
+                            // Creo delle booleane pec controllare quali punti appartengono a quale lato e per fare i midpoint
+                            bool i1 = (*it)[1] != 0;
+                            bool i2 = (*it2)[1] != 0;
+                            bool j1 = (*it)[2] != 0;
+                            bool j2 = (*it2)[2] != 0;
+                            bool k1 = (*it)[3] != 0;
+                            bool k2 = (*it2)[3] != 0;
+                            bool inter1 = i1 && j1 && k1;
+                            bool inter2 = i2 && j2 && k2;
+                            // qui gestisco i punti laterali che appartengono allo stesso lato 
+                            if ((i1 == i2 && j1 == j2 && k1 == k2) && (!i1 || !j1 || !k1) && (i1 || j1 || k1)){
+                                x = (mesh.Cell0DsCoordinates(0, id1) + mesh.Cell0DsCoordinates(0, id2)) / 2;
+                                y = (mesh.Cell0DsCoordinates(1, id1) + mesh.Cell0DsCoordinates(1, id2)) / 2;
+                                z = (mesh.Cell0DsCoordinates(2, id1) + mesh.Cell0DsCoordinates(2, id2)) / 2;
+                                GetorCreatePoint(mesh,x,y,z,l);
+                            }
+                            // qui gestisco i punti laterali che sono vicini ai vertici del triangolo
+                            if ((i1 != i2 && j1 == j2 && k1 == k2 && !inter1 && !inter2) || (i1 == i2 && j1 != j2 && k1 == k2 && !inter1 && !inter2) || (i1 == i2 && j1 == j2 && k1 != k2 && !inter1 && !inter2)){
+                                x = (mesh.Cell0DsCoordinates(0, id1) + mesh.Cell0DsCoordinates(0, id2)) / 2;
+                                y = (mesh.Cell0DsCoordinates(1, id1) + mesh.Cell0DsCoordinates(1, id2)) / 2;
+                                z = (mesh.Cell0DsCoordinates(2, id1) + mesh.Cell0DsCoordinates(2, id2)) / 2;
+                                Proximity.push_back(GetorCreatePoint(mesh,x,y,z,l));
 
-        for (int i = 0;i < numlati; ++i) {
+                            }
+                        }
+                    }
+                }
+                // prendo i punti che sono vicini e creo i lati
+                for (auto it = mesh.Cell2DsVertices[l].begin(); it != mesh.Cell2DsVertices[l].end(); ++it) {
+                    for (auto it2 = mesh.Cell2DsVertices[l].begin(); it2 != mesh.Cell2DsVertices[l].end(); ++it2) {
+                        if (Distance(mesh, *it, *it2) <= (Lato/(d_d*sqrt(3)) + eps) && (*it != *it2) && !(find(Proximity.begin(), Proximity.end(), *it) != Proximity.end() && find(Proximity.begin(), Proximity.end(), *it2) != Proximity.end())){ 
+                            unsigned int x = *it;
+                            unsigned int y = *it2;
+                            GetorCreateEdge(mesh,x,y,l);
+                        }
+                    }
+                }
+                
+            }
+            // Pulisco i vettori e alloco la memoria necessaria
+            Tag.clear();
+            Tag.reserve(red);
+            Proximity.clear();
+            Proximity.reserve(6);
+        }     
+        // risistemo gli id degli edge e dei punti
+        for (unsigned int i = 0;i < numlati; ++i) {
             mesh.Cell1DsId.erase(mesh.Cell1DsId.begin() + i);
             mesh.NumCell1Ds--;
         }
         for (unsigned int i = 0;i < mesh.NumCell1Ds; ++i){
             mesh.Cell1DsId[i] = i ;
         }
-        mesh.Cell1DsExtrema = mesh.Cell1DsExtrema.rightCols(mesh.NumCell1Ds).eval();
+        mesh.Cell1DsExtrema = mesh.Cell1DsExtrema.rightCols(mesh.NumCell1Ds).eval();        
         CreateTriFace(mesh,p,q,b,c);
-    }
+    }    
     return true;
 }
 
 
 
 
-
+// funzione che centralizza la mesh
 bool Centralize(PolyhedralMesh& mesh)
 {
     if (mesh.NumCell0Ds == 0) return false;
@@ -286,7 +401,7 @@ bool Centralize(PolyhedralMesh& mesh)
     double xsum;
     double ysum;
     double zsum;
-
+    // calcolo il baricentro della mesh
     for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
         xsum += mesh.Cell0DsCoordinates(0, i);
         ysum += mesh.Cell0DsCoordinates(1, i);
@@ -294,7 +409,7 @@ bool Centralize(PolyhedralMesh& mesh)
     }
 
 
-
+    // Sposto il baricentro in (0,0,0)
     for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
         mesh.Cell0DsCoordinates(0, i) -= (xsum / mesh.NumCell0Ds);
         mesh.Cell0DsCoordinates(1, i) -= (ysum / mesh.NumCell0Ds);
@@ -302,9 +417,9 @@ bool Centralize(PolyhedralMesh& mesh)
     }
     return true;
 }
+// funzione che proietta i punti della mesh sulla sfera unitaria
 bool Normalize(PolyhedralMesh& mesh)
 {
-    //mesh.Cell0DsCoordinates = mesh.Cell0DsCoordinates * 1e5; 
     if (mesh.NumCell0Ds == 0) return false;
     double norm;
     for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
@@ -315,9 +430,6 @@ bool Normalize(PolyhedralMesh& mesh)
         mesh.Cell0DsCoordinates(0, i) /= norm;
         mesh.Cell0DsCoordinates(1, i) /= norm;
         mesh.Cell0DsCoordinates(2, i) /= norm;
-        //mesh.Cell0DsCoordinates(0, i) *= 1e2;
-        //mesh.Cell0DsCoordinates(1, i) *= 1e2;
-        //mesh.Cell0DsCoordinates(2, i) *= 1e2;
     }
     return true;
 }
@@ -332,11 +444,11 @@ bool ImportCell0Ds(PolyhedralMesh& mesh, const string& filename)
     getline(file, line); // salta header
 
     vector<unsigned int> ids;
-    vector<int> markers;
+    vector<unsigned int> markers;
     vector<double> xs, ys, zs;
     while (getline(file, line)) {
         stringstream ss(line);
-        unsigned int id; int marker;
+        unsigned int id, marker;
         double x, y, z;
         char sep;
         ss >> id >> sep >> marker >> sep >> x >> sep >> y >> sep >> z;
@@ -350,7 +462,7 @@ bool ImportCell0Ds(PolyhedralMesh& mesh, const string& filename)
     mesh.NumCell0Ds = ids.size();
     mesh.Cell0DsId = move(ids);
     mesh.Cell0DsCoordinates.resize(3, mesh.NumCell0Ds);
-    for (size_t i = 0; i < mesh.NumCell0Ds; ++i) {
+    for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
         mesh.Cell0DsCoordinates(0, i) = xs[i];
         mesh.Cell0DsCoordinates(1, i) = ys[i];
         mesh.Cell0DsCoordinates(2, i) = zs[i];
@@ -385,7 +497,7 @@ bool ImportCell1Ds(PolyhedralMesh& mesh, const string& filename)
     mesh.NumCell1Ds = ids.size();
     mesh.Cell1DsId = move(ids);
     mesh.Cell1DsExtrema.resize(2, mesh.NumCell1Ds);
-    for (size_t i = 0; i < mesh.NumCell1Ds; ++i) {
+    for (unsigned int i = 0; i < mesh.NumCell1Ds; ++i) {
         mesh.Cell1DsExtrema(0, i) = origins[i];
         mesh.Cell1DsExtrema(1, i) = ends[i];
         mesh.Cell1DsMarker[markers[i]].push_back(mesh.Cell1DsId[i]);
@@ -405,9 +517,9 @@ bool ImportCell2Ds(PolyhedralMesh& mesh, const string& filename)
 
     while (getline(file, line)) {
         stringstream ss(line);
-        unsigned int id; int marker, numV, numE;
+        unsigned int id,numV, numE;
         char sep;
-        ss >> id >> sep >> marker >> sep >> numV;
+        ss >> id >> sep >> numV;
         vector<unsigned int> verts(numV);
         for (int i = 0; i < numV; ++i) ss >> sep >> verts[i];
         ss >> sep >> numE;
@@ -417,7 +529,6 @@ bool ImportCell2Ds(PolyhedralMesh& mesh, const string& filename)
         mesh.Cell2DsId.push_back(id);
         mesh.Cell2DsVertices.push_back(move(verts));
         mesh.Cell2DsEdges.push_back(move(edges));
-        mesh.Cell2DsMarker[marker].push_back(id);
     }
     mesh.NumCell2Ds = mesh.Cell2DsId.size();
     return true;

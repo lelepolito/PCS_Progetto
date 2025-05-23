@@ -28,7 +28,6 @@ struct PolyhedralMesh {
     vector<unsigned int> Cell2DsId;
     vector<vector<unsigned int>> Cell2DsVertices;
     vector<vector<unsigned int>> Cell2DsEdges;
-    map<unsigned int, list<unsigned int>> Cell2DsMarker;
 
     // CELLA 3D
     unsigned int NumCell3Ds = 0;

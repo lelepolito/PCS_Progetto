@@ -7,7 +7,7 @@
 // controlla se il punto (x,y,z) è già presente nella mesh
 // se non lo è lo aggiunge e restituisce il suo id
 namespace PolygonalLibrary {
-unsigned int GetorCreateVec(PolyhedralMesh& mesh, double& x, double& y,double& z, unsigned int l);
+unsigned int GetorCreatePoint(PolyhedralMesh& mesh, double& x, double& y,double& z, unsigned int l);
 unsigned int GetorCreateEdge(PolyhedralMesh& mesh,unsigned int& x,unsigned int& y, unsigned int l);
 // import da CSV con nome file esplicito
 bool ImportCell0Ds(PolyhedralMesh& mesh, const std::string& filename);
