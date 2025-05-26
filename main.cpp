@@ -5,17 +5,89 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
 #include "UCDUtilities.hpp"
 #include "Utils.hpp"
 #include "struttura.hpp"
 #include <iomanip>
 using namespace std;
 
+unordered_map<unsigned int, unordered_set<unsigned int>> adjacency;
+//function lista di adiacenza
+void buildAdjacencyList(const vector<vector<unsigned int>>& Cell2DsVertices) {
+    for (const auto& face : Cell2DsVertices) {
+        size_t numVertices = face.size();
+
+        for (size_t i = 0; i < numVertices; ++i) {
+            unsigned int u = face[i];
+            unsigned int v = face[(i + 1) % numVertices]; //serve per chiudere il
+
+            // Aggiungi arco bidirezionale
+            adjacency[u].insert(v);
+            adjacency[v].insert(u);
+        }
+    }
+}
+
+//function per cammino minmo tra due vertici
+std::vector<int> bfs_shortest_path(
+    const std::unordered_map<unsigned int, std::unordered_set<unsigned int>>& adjacency,
+    int start,
+    int end,
+    int n
+    ) {std::vector<int> predecessor(n, -1);
+        std::vector<bool> visited(n, false);
+    
+        std::queue<int> q;
+        q.push(start);
+        visited[start] = true;
+    
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+    
+            for (int v : adjacency.at(u)) {
+                if (!visited[v]) {
+                    visited[v] = true;
+                    predecessor[v] = u;
+                    q.push(v);
+    
+                    if (v == end) {  // Fermati appena trovi il nodo finale
+                        q = std::queue<int>(); // svuota la coda forzatamente
+                        break;
+                    }
+                }
+            }
+        }
+    
+        // Se end non è stato raggiunto
+        if (!visited[end]) {
+            return {}; // Cammino vuoto = nessun cammino trovato
+        }
+    
+        // Ricostruisci il cammino minimo da start a end
+        std::vector<int> path;     
+        for (int at = end; at != -1; at = predecessor[at]) {
+            path.push_back(at);
+        }
+        std::reverse(path.begin(), path.end());
+        return path; 
+    }
+
+
+
+
+
+
+
+
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
-bool quadinput(int &p, int &q, int &b, int &c) {
-    cout << "Inserisci quattro interi p, q, b, c: ";
-    if (!(cin >> p >> q >> b >> c)) {
-        cerr << "Errore di lettura: inserisci quattro numeri interi." << endl;
+bool quadinput(int &p, int &q, int &b, int &c, int&start, int&end) {
+    cout << "Inserisci sei interi p, q, b, c, start, end: ";
+    if (!(cin >> p >> q >> b >> c >> start >> end)) {
+        cerr << "Errore di lettura: inserisci sei numeri interi." << endl;
         return false;
     }
     if (p < 3 || p > 5) {
@@ -55,11 +127,11 @@ int main() {
         {35, "db/icosahedron"}
     };
 
-    int p, q, b, c;
-    if (!quadinput(p, q, b, c)) {
+    int p, q, b, c, start, end;
+    if (!quadinput(p, q, b, c, start, end)) {
         return EXIT_FAILURE;
     }
-
+    
     int code = p * 10 + q;
     auto it = schlafiMap.find(code);
     if (it == schlafiMap.end()) {
@@ -78,6 +150,44 @@ int main() {
         cerr << "ImportCell3Ds fallito per " << basename << endl;
         return EXIT_FAILURE;
     }
+
+    // 4. Costruisci lista di adiacenza (popola adjacency)
+    buildAdjacencyList(mesh.Cell2DsVertices);
+
+    cout << "Lista di adiacenza:\n";
+    for (const auto& pair : adjacency) {
+        unsigned int u = pair.first;
+        const auto& neighbors = pair.second;
+
+        cout << "Vertice " << u << " è adiacente a: ";
+        for (unsigned int v : neighbors) {
+            cout << v << " ";
+    }
+    cout << "\n";
+}
+
+
+// 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
+    if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
+        cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
+        return EXIT_FAILURE;
+}
+
+// 6. Calcolo cammino minimo
+    unsigned int n = mesh.Cell3DsNumVertices[0];
+    std::vector<int> path = bfs_shortest_path(adjacency, start, end, n);
+
+// 7. Stampa risultato
+    if (path.empty()) {
+        cout << "Nessun cammino esiste tra " << start << " e " << end << ".\n";
+}   else {
+        cout << "\nCammino minimo tra " << start << " e " << end << ": ";
+        for (int v : path) {
+            cout << v << " ";
+    }
+        cout << "\nLunghezza (in spigoli): " << path.size() - 1 << "\n";
+}
+
 
 
     if (PolygonalLibrary::Centralize(mesh)) {
