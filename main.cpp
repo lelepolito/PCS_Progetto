@@ -9,6 +9,10 @@
 #include "Utils.hpp"
 #include "struttura.hpp"
 #include <iomanip>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <algorithm>
 using namespace std;
 
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
@@ -60,7 +64,16 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    int code = p * 10 + q;
+    // Calcolo del codice per schlafiMap
+    int code;
+    if (q == 3) {
+        // Caso duale: devo triangolare {3,p} per ottenere il duale {p,3}
+        code = 3 * 10 + p;
+    } else {
+        // Caso standard
+        code = p * 10 + q;
+    }
+    
     auto it = schlafiMap.find(code);
     if (it == schlafiMap.end()) {
         cerr << "La coppia {" << p << "," << q << "} non corrisponde a un solido platonico." << endl;
@@ -79,37 +92,65 @@ int main() {
         return EXIT_FAILURE;
     }
 
-
     if (PolygonalLibrary::Centralize(mesh)) {
         cout << "Mesh centrato." << endl;
     } else {
         cout << "Mesh non centrato." << endl;
     }
     
-    if (!PolygonalLibrary::Triangulate(mesh,p,q, b, c)) {
-        cerr << "Triangulation fallita per " << basename << endl;
-        return EXIT_FAILURE;
+    // Triangolazione: se q==3 triangolo {3,p}, altrimenti {p,q}
+    if (q == 3) {
+        cout << "Triangulating {3," << p << "} to calculate dual {" << p << ",3}" << endl;
+        if (!PolygonalLibrary::Triangulate(mesh, 3, p, b, c)) {
+            cerr << "Triangulation fallita per {3," << p << "}" << endl;
+            return EXIT_FAILURE;
+        }
     } else {
-        cout << "Triangulation riuscita." << endl;
+        cout << "Triangulating standard polyhedron {" << p << "," << q << "}" << endl;
+        if (!PolygonalLibrary::Triangulate(mesh, p, q, b, c)) {
+            cerr << "Triangulation fallita per " << basename << endl;
+            return EXIT_FAILURE;
+        }
     }
-
+    cout << "Triangulation riuscita." << endl;
+/*
     if (PolygonalLibrary::Normalize(mesh)) {
         cout << "Mesh normalizzato." << endl;
     } else {
         cout << "Mesh non normalizzato." << endl;
+    }*/
+
+    // Export dei file .txt 
+    PolygonalLibrary::Export_Polyhedron(mesh);
+    
+    // GESTIONE DEL DUALE quando q == 3
+    if (q == 3) {
+        cout << "Calculating dual of {3," << p << "} to obtain {" << p << ",3}" << endl;
+        
+        if (!PolygonalLibrary::CalculateAndExportDual(mesh, p, q, b, c)) {
+            cerr << "Dual calculation failed" << endl;
+            return EXIT_FAILURE;
+        }
+        cout << "Dual calculation completed." << endl;
+    } else {
+        cout << "Standard polyhedron construction (no dual calculation needed)." << endl;
     }
 
+    // Export dei file .inp per Paraview 
     Gedim::UCDUtilities utilities;
-    Export_Polyhedron(mesh);
     utilities.ExportPoints("./Cell0Ds.inp",
                            mesh.Cell0DsCoordinates);
 
     utilities.ExportSegments("./Cell1Ds.inp",
                              mesh.Cell0DsCoordinates,
                              mesh.Cell1DsExtrema);
+    
     utilities.ExportPolygons("./Cell2Ds.inp",
                               mesh.Cell0DsCoordinates,
                               mesh.Cell2DsVertices);
-    cout << "File generati: cell0.txt, cell1.txt, cell2.txt, cell3.txt" << endl;
+    
+    cout << "File generati: Cell0Ds.txt, Cell1Ds.txt, Cell2Ds.txt, Cell3Ds.txt" << endl;
+    cout << "File Paraview: Cell0Ds.inp, Cell1Ds.inp, Cell2Ds.inp" << endl;
+    
     return EXIT_SUCCESS;
 }

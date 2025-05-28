@@ -21,5 +21,14 @@ void Export_Polyhedron(PolyhedralMesh& P);
 // e legge "<basename>_vertices.csv", "<basename>_edges.csv", "<basename>_faces.csv"
 bool ImportMesh(PolyhedralMesh& mesh, const std::string& basename);
 bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, const int& c);
+void CalculateFaceCentroids(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh);
+void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh);
+void CreateDualFaces(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh);
+vector<unsigned int> OrderDualFaceVertices(const vector<unsigned int>& faceVertices, const PolyhedralMesh& dualMesh);
+void ProjectDualToSphere(PolyhedralMesh& dualMesh);
+void ExportDualFiles(const PolyhedralMesh& dualMesh);
+bool CalculateAndExportDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c);
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2);
+
+
 } // namespace PolygonalLibrary
