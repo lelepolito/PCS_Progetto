@@ -9,10 +9,6 @@
 #include "Utils.hpp"
 #include "struttura.hpp"
 #include <iomanip>
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
-#include <algorithm>
 using namespace std;
 
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
