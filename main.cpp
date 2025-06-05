@@ -10,7 +10,7 @@
 #include "struttura.hpp"
 #include <iomanip>
 using namespace std;
-//ok
+// Questa applicazione costruisce solidi platonici e i loro duali
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
 bool quadinput(int &p, int &q, int &b, int &c) {
     cout << "Inserisci quattro interi p, q, b, c: ";
