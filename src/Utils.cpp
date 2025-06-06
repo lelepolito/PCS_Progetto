@@ -206,7 +206,7 @@ unsigned int GetorCreatePoint(PolyhedralMesh& mesh,double& x, double& y, double&
             abs(mesh.Cell0DsCoordinates(1, i) - y) < epsilon &&
             abs(mesh.Cell0DsCoordinates(2, i) - z) < epsilon) {
                 it = find (mesh.Cell2DsVertices[l].begin(), mesh.Cell2DsVertices[l].end(), i); // da aggiustare perchè se il punto è alla fine lo da come non trovato
-                    if (it == mesh.Cell2DsVertices[l].end() && *it != i) { //così dovrebbe andare
+                    if (it == mesh.Cell2DsVertices[l].end() ) { 
                         mesh.Cell2DsVertices[l].push_back({i});}
                 return mesh.Cell0DsId[i];
         }
@@ -422,10 +422,10 @@ bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, c
             Proximity.reserve(6);
         }     
         // risistemo gli id degli edge e dei punti
-        for (unsigned int i = 0;i < numlati; ++i) {
-            mesh.Cell1DsId.erase(mesh.Cell1DsId.begin() + i);
-            mesh.NumCell1Ds--;
-        }
+        
+        mesh.Cell1DsId.erase(mesh.Cell1DsId.begin(), mesh.Cell1DsId.begin() + numlati);
+        mesh.NumCell1Ds = mesh.Cell1DsId.size();
+        
         for (unsigned int i = 0;i < mesh.NumCell1Ds; ++i){
             mesh.Cell1DsId[i] = i ;
         }

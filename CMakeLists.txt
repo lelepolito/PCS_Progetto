@@ -42,11 +42,18 @@ list(APPEND PolyhedralMesh_SOURCES ${PolyhedralMesh_sources})
 list(APPEND PolyhedralMesh_HEADERS ${PolyhedralMesh_headers})
 list(APPEND PolyhedralMesh_INCLUDE ${PolyhedralMesh_includes})
 
+add_subdirectory(src_test)
+list(APPEND PolyhedralMesh_SOURCES ${src_test_sources})
+list(APPEND PolyhedralMesh_HEADERS ${src_test_headers})
+list(APPEND PolyhedralMesh_INCLUDES ${src_test_includes})
+
 add_subdirectory(ExportParaview)
 
 list(APPEND PolyhedralMesh_SOURCES ${src_paraview_sources})
 list(APPEND PolyhedralMesh_HEADERS ${src_paraview_headers})
 list(APPEND PolyhedralMesh_INCLUDE ${src_paraview_includes})
+
+
 
 # Create executable
 ################################################################################
@@ -55,8 +62,20 @@ add_executable(${PROJECT_NAME}
       ${PolyhedralMesh_SOURCES}
       ${PolyhedralMesh_HEADERS})
 
-
-
 target_link_libraries(${PROJECT_NAME} ${PolyhedralMesh_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PolyhedralMesh_INCLUDE})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
+
+
+add_executable(${PROJECT_NAME}_TEST
+      main_test.cpp
+      ${PolyhedralMesh_SOURCES}
+      ${PolyhedralMesh_HEADERS}
+      ${src_test_sources}
+      ${src_test_headers})
+
+target_link_libraries(${PROJECT_NAME}_TEST ${PolyhedralMesh_LINKED_LIBRARIES})
+target_include_directories(${PROJECT_NAME}_TEST PRIVATE ${PolyhedralMesh_INCLUDE} ${src_test_includes})
+target_compile_options(${PROJECT_NAME}_TEST PUBLIC -fPIC)
+
+
