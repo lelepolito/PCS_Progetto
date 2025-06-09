@@ -2,7 +2,12 @@
 
 #include <string>
 #include "struttura.hpp"
-
+#include <Eigen/Dense>
+#include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include <map>
+#include <vector>
 
 // controlla se il punto (x,y,z) è già presente nella mesh
 // se non lo è lo aggiunge e restituisce il suo id
@@ -29,6 +34,18 @@ void ProjectDualToSphere(PolyhedralMesh& dualMesh);
 void ExportDualFiles(const PolyhedralMesh& dualMesh);
 bool CalculateAndExportDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c);
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2);
-
+std::unordered_map<unsigned int, std::unordered_set<unsigned int>> buildAdjacencyList(const std::vector<std::vector<unsigned int>>& Cell2DsVertices);
+std::list<unsigned int> bfs_shortest_path(
+    const std::unordered_map<unsigned int, std::unordered_set<unsigned int>>& adjacency,
+    int start,
+    int end,
+    int n,
+    std::map<unsigned int, std::list<unsigned int>>& Cell0DsMarker,
+    std::map<unsigned int, std:: list<unsigned int>>& Cell1DsMarker,
+    unsigned int NumCell1Ds,
+    MatrixXi Cell1DsExtrema
+    );
 
 } // namespace PolygonalLibrary
+
+

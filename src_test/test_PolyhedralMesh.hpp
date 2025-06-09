@@ -3,7 +3,10 @@
 #include <iostream>
 #include <vector>
 #include <gtest/gtest.h>
-
+#include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include <Eigen/Dense>
 #include "Utils.hpp"
 #include "Eigen/Eigen"
 #include "struttura.hpp"
@@ -225,3 +228,113 @@ TEST(TestPolyhedron, TestGetorCreatePoint2)
 	EXPECT_DOUBLE_EQ(mesh.Cell0DsCoordinates(1, pointId), y);
 	EXPECT_DOUBLE_EQ(mesh.Cell0DsCoordinates(2, pointId), z);
 }
+
+TEST(BuildAdjacencyTest, Grafo7Nodi) {
+	std::vector<std::vector<unsigned int>> faces = {
+		{0, 1}, {0, 2}, {1, 3}, {2, 3}, {2, 4}, {3, 5}, {4, 5}, {4, 6}, {5, 6}
+	};
+	
+	unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(faces);
+
+	EXPECT_EQ(adjacency[0].size(), 2);
+	EXPECT_EQ(adjacency[4].size(), 3);
+
+	EXPECT_TRUE(adjacency[0].count(1));
+	EXPECT_TRUE(adjacency[4].count(6));
+}
+
+TEST(BfsShortestPathTest, Grafo7Nodi) {
+	std::vector<std::vector<unsigned int>> faces = {
+		{0, 1}, {0, 2}, {1, 3}, {2, 3}, {2, 4}, {3, 5}, {4, 5}, {4, 6}, {5, 6}
+	};
+	
+	unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(faces);
+
+
+	// Verifica alcune proprietà della lista di adiacenza
+	EXPECT_EQ(adjacency[0].size(), 2);  // nodi adiacenti a 0: 1 e 2
+	EXPECT_EQ(adjacency[4].size(), 3);  // nodi adiacenti a 4: 2,5,6
+
+// Prepara le strutture richieste da bfs_shortest_path
+	map<unsigned int, list<unsigned int>> Cell0DsMarker;
+	map<unsigned int, list<unsigned int>> Cell1DsMarker;
+
+// Inserisci qualche dato dummy se serve 
+	Cell0DsMarker[0] = {10};
+	Cell1DsMarker[1] = {20};
+
+	unsigned int NumCell1Ds = 9;
+
+	MatrixXi Cell1DsExtrema(2, NumCell1Ds);
+	Cell1DsExtrema << 0, 0, 1, 2, 2, 3, 4, 4, 5,
+			  1, 2, 3, 3, 4, 5, 5, 6, 6;
+	
+
+int n = 7;
+unsigned int start = 0;
+unsigned int end = 6;
+
+// Chiama bfs_shortest_path
+list<unsigned int> path = bfs_shortest_path(adjacency, start, end, n, Cell0DsMarker, Cell1DsMarker, NumCell1Ds, Cell1DsExtrema);
+
+// Percorsi attesi (esempio)
+vector<unsigned int> expected_path1 = {0, 2, 4, 6};
+
+
+vector<unsigned int> actual_path(path.begin(), path.end());
+
+// Controlla che il percorso trovato sia uno di quelli attesi
+EXPECT_TRUE(actual_path == expected_path1);
+	
+}
+
+TEST(BfsShortestPathTest, Grafo12Nodi_PercorsoPiuBreveUnico) {
+	std::vector<std::vector<unsigned int>> faces = {
+		{0, 1}, {1, 2}, {2, 3}, {3, 4},
+		{4, 5}, {5, 6}, {6, 7}, {7, 8},
+		{8, 9}, {9, 10}, {10, 11}, // percorso principale (lineare)
+		{0, 5}, {1, 6}, {2, 7},    // archi alternativi più lunghi
+		{3, 8}, {4, 9}             // ma non più brevi
+	};
+
+	unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(faces);
+
+	// Verifica proprietà della lista di adiacenza
+	EXPECT_EQ(adjacency[0].size(), 2);   // 1, 5
+	EXPECT_EQ(adjacency[5].size(), 3);   // 4, 6, 0
+	EXPECT_EQ(adjacency[10].size(), 2);  // 9, 11
+
+	// Marker dummy
+	map<unsigned int, list<unsigned int>> Cell0DsMarker;
+	map<unsigned int, list<unsigned int>> Cell1DsMarker;
+
+	Cell0DsMarker[0] = {123};
+	Cell1DsMarker[1] = {456};
+
+	unsigned int NumCell1Ds = faces.size(); // 16 archi
+
+	MatrixXi Cell1DsExtrema(2, NumCell1Ds);
+	for (size_t i = 0; i < faces.size(); ++i) {
+		Cell1DsExtrema(0, i) = faces[i][0];
+		Cell1DsExtrema(1, i) = faces[i][1];
+	}
+
+	int n = 12;
+	unsigned int start = 0;
+	unsigned int end = 11;
+
+	// Chiama bfs_shortest_path
+	list<unsigned int> path = bfs_shortest_path(
+		adjacency, start, end, n,
+		Cell0DsMarker, Cell1DsMarker,
+		NumCell1Ds, Cell1DsExtrema
+	);
+
+	// Percorso più breve unico e verificabile
+	vector<unsigned int> expected_path = {0, 5, 4, 9, 10, 11};
+
+	vector<unsigned int> actual_path(path.begin(), path.end());
+
+	EXPECT_EQ(actual_path, expected_path);
+}
+

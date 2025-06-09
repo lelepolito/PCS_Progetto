@@ -6,6 +6,9 @@
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
+#include <queue>
+#include <vector>
+#include <unordered_set>
 #include "UCDUtilities.hpp"
 
 using namespace std;
@@ -909,6 +912,187 @@ bool ImportMesh(PolyhedralMesh& mesh, const string& basename)
     if (!ImportCell2Ds(mesh, basename + "_faces.csv"))    return false;
     return true;
 }
+
+std::unordered_map<unsigned int, std::unordered_set<unsigned int>> buildAdjacencyList(const std::vector<std::vector<unsigned int>>& Cell2DsVertices) {
+    std::unordered_map<unsigned int, unordered_set<unsigned int>> adjacency;
+    for (const auto& face : Cell2DsVertices) {
+        size_t numVertices = face.size();
+
+        for (size_t i = 0; i < numVertices; ++i) {
+            unsigned int u = face[i];
+            unsigned int v = face[(i + 1) % numVertices]; //serve per chiudere il
+
+            // Aggiungi arco bidirezionale
+            adjacency[u].insert(v);
+            adjacency[v].insert(u);
+        }
+    }
+    return adjacency;
+}
+
+
+
+
+
+std::list<unsigned int> bfs_shortest_path(
+    const unordered_map<unsigned int, unordered_set<unsigned int>>& adjacency,
+    int start,
+    int end,
+    int n,
+    map<unsigned int, list<unsigned int>>& Cell0DsMarker,
+    map<unsigned int, list<unsigned int>>& Cell1DsMarker,
+    unsigned int NumCell1Ds,
+    MatrixXi Cell1DsExtrema
+    ) {vector<int> predecessor(n, -1);
+        vector<bool> visited(n, false);
+    
+        queue<int> q;
+        q.push(start);
+        visited[start] = true;
+    
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+    
+            for (int v : adjacency.at(u)) {
+                if (!visited[v]) {
+                    visited[v] = true;
+                    predecessor[v] = u;
+                    q.push(v);
+    
+                    if (v == end) {  // Fermati appena trovi il nodo finale
+                        q = std::queue<int>(); // svuota la coda forzatamente
+                        break;
+                    }
+                }
+            }
+        }
+    
+        // Se end non è stato raggiunto
+        if (!visited[end]) {
+            return {}; // Cammino vuoto = nessun cammino trovato
+        }
+    
+        // Ricostruisci il cammino minimo da start a end
+        /*std::vector<int> path;     
+        for (int at = end; at != -1; at = predecessor[at]) {
+            path.push_back(at);
+        }
+        std::reverse(path.begin(), path.end());
+        std::list<unsigned int> list_path; */
+
+        // Ricostruisci il cammino minimo da start a end
+        list<unsigned int> path;
+        for (int at = end; at != -1; at = predecessor[at]) {
+            path.push_front(at);
+        }
+        
+        
+        /*for (int val : path) {
+            path.push_back(static_cast<unsigned int>(val));  
+        } */
+
+        //modifico il marker del cammino minimo a 1
+        for (unsigned int vertex : path)  { 
+            // Cerca il vertice in Cell0DsMarker[0]
+            auto& list0 = Cell0DsMarker[0];
+            auto it0 = std::find(list0.begin(), list0.end(), vertex);
+            
+            if (it0 != list0.end()) {
+                // Rimuovilo da 0
+                list0.erase(it0);
+        
+                // Aggiungilo a 1
+                Cell0DsMarker[1].push_back(vertex);
+            }
+        }
+         // 7. Stampa risultato
+         if (path.empty()) {
+            cout << "Nessun cammino esiste tra " << start << " e " << end << ".\n"; }
+        else {
+            cout << "\nCammino minimo tra " << start << " e " << end << ": ";
+        for (int v : path) {
+            cout << v << " ";
+        }
+        cout << "\nLunghezza (in spigoli): " << path.size() - 1 << "\n";
+        }
+
+
+        if (path.empty()) {
+            cout << "Nessun cammino esiste tra " << start << " e " << end << ".\n"; }
+        else {
+            cout << "\nCammino minimo tra " << start << " e " << end << ": ";
+            for (int v : path) {
+                cout << v << " ";
+        }
+        cout << "\nLunghezza (in spigoli): " << path.size() - 1 << "\n"; }
+
+        // Stampa archi del cammino minimo
+        /*cout << "Archi del cammino minimo: ";
+        for (size_t i = 0; i + 1 < path.size(); ++i) {
+            cout << "(" << path[i] << "," << path[i+1] << ") ";
+        }
+        cout << "\n";
+        } */
+        
+// Stampa archi del cammino minimo
+cout << "Archi del cammino minimo: ";
+for (auto it = path.begin(); next(it) != path.end(); ++it) {
+    cout << "(" << *it << "," << *next(it) << ") ";
+}
+cout << "\n";
+
+// Lista per contenere gli ID degli archi
+list<unsigned int> archiCammino;
+
+for (auto it = path.begin(); next(it) != path.end(); ++it) {
+    unsigned int u = *it;
+    unsigned int v = *next(it);
+    bool trovato = false;
+
+    for (unsigned int e = 0; e < NumCell1Ds; ++e) {
+        unsigned int a = Cell1DsExtrema(0, e);
+        unsigned int b = Cell1DsExtrema(1, e);
+        if ((a == u && b == v) || (a == v && b == u)) {
+            archiCammino.push_back(e); 
+            trovato = true;
+            break;
+        }
+    }
+
+    if (!trovato) {
+        cerr << "Arco (" << u << "," << v << ") non trovato tra gli archi.\n";
+    }
+}
+
+// Stampa gli ID degli archi del cammino minimo
+cout << "ID archi del cammino minimo: ";
+for (auto idArco : archiCammino) {
+    cout << idArco << " ";
+}
+cout << endl;
+
+
+for (unsigned int vertex : archiCammino)  { 
+    // Cerca l'arco in Cell1DsMarker[0]
+    auto& list1 = Cell1DsMarker[0];
+    auto it1 = find(list1.begin(), list1.end(), vertex);
+    
+    if (it1 != list1.end()) {
+        // Rimuovilo da 0
+        list1.erase(it1);
+
+        // Aggiungilo a 1
+        Cell1DsMarker[1].push_back(vertex);
+    }
+            
+    
+        }
+        
+
+        return path; 
+        
+    }
 
 
 

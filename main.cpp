@@ -5,6 +5,10 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include<queue>
 #include "UCDUtilities.hpp"
 #include "Utils.hpp"
 #include "struttura.hpp"
@@ -12,9 +16,9 @@
 using namespace std;
 
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
-bool quadinput(int &p, int &q, int &b, int &c) {
-    cout << "Inserisci quattro interi p, q, b, c: ";
-    if (!(cin >> p >> q >> b >> c)) {
+bool quadinput(int &p, int &q, int &b, int &c, int& start, int& end) {
+    cout << "Inserisci interi p, q, b, c, start, end: ";
+    if (!(cin >> p >> q >> b >> c >> start >> end)) {
         cerr << "Errore di lettura: inserisci quattro numeri interi." << endl;
         return false;
     }
@@ -55,8 +59,8 @@ int main() {
         {35, "db/icosahedron"}
     };
 
-    int p, q, b, c;
-    if (!quadinput(p, q, b, c)) {
+    int p, q, b, c, start, end;
+    if (!quadinput(p, q, b, c, start, end)) {
         return EXIT_FAILURE;
     }
 
@@ -116,6 +120,39 @@ int main() {
         cout << "Mesh non normalizzato." << endl;
     }*/
 
+
+
+
+    // 4. Costruisci lista di adiacenza (popola adjacency)
+unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = PolygonalLibrary::buildAdjacencyList(mesh.Cell2DsVertices);
+
+cout << "Lista di adiacenza:\n";
+for (const auto& [u, neighbors] : adjacency) {
+    cout << "Vertice " << u << " è adiacente a: ";
+    for (int v : neighbors) {
+        cout << v << " ";
+    }
+    cout << endl;
+}
+
+
+
+
+// 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
+if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
+    cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
+    return EXIT_FAILURE;
+}
+
+// 6. Calcolo cammino minimo
+
+unsigned int n = 0;
+for (const auto& [u, _] : adjacency) {
+    if (u + 1 > n) n = u + 1;
+}
+
+PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker, mesh.Cell1DsMarker,
+                                          mesh.NumCell1Ds, mesh.Cell1DsExtrema);
     // Export dei file .txt 
     PolygonalLibrary::Export_Polyhedron(mesh);
     
@@ -132,6 +169,56 @@ int main() {
         cout << "Standard polyhedron construction (no dual calculation needed)." << endl;
     }
 
+        
+    //ShortPath property
+    vector<Gedim::UCDProperty<double>> points_properties;
+    vector<Gedim::UCDProperty<double>> segmnents_properties;
+    points_properties.reserve(1); //We have only one Property
+    segmnents_properties.reserve(1);
+
+    vector<double> prop_vert(mesh.NumCell0Ds, 0.0);
+    vector<double> prop_edges(mesh.NumCell1Ds, 0.0);
+
+    //Fill the struct points_properties
+    Gedim::UCDProperty<double> pointP;
+    pointP.Label = "ShortPath";
+    pointP.NumComponents = 1;
+    pointP.Data = prop_vert.data();
+    points_properties.push_back(pointP);
+
+
+    //Fill the struct segments_properties
+   Gedim::UCDProperty<double> edgeP;
+   edgeP.Label = "ShortPath";
+   edgeP.NumComponents = 1;
+   edgeP.Data = prop_edges.data();
+   segmnents_properties.push_back(edgeP);   
+
+
+for (const auto& pair : mesh.Cell0DsMarker) {
+   unsigned int marker = pair.first;
+   const list<unsigned int>& vert_ids = pair.second;
+
+   if (marker == 1) {
+       for (unsigned int id : vert_ids) {
+           if (id < prop_vert.size()) {
+               prop_vert[id] = 1.0; // imposta il valore per identificare i vertici marcati
+           }
+       }
+   }
+}
+for (const auto& pair : mesh.Cell1DsMarker) {
+   unsigned int marker = pair.first;
+   const list<unsigned int>& edge_ids = pair.second;
+
+   if (marker == 1) {
+       for (unsigned int id : edge_ids) {
+           if (id < prop_edges.size()) {
+               prop_edges[id] = 1.0; 
+           }
+       }
+   }
+}
     // Export dei file .inp per Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
