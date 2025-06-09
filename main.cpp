@@ -222,11 +222,14 @@ for (const auto& pair : mesh.Cell1DsMarker) {
     // Export dei file .inp per Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
-                           mesh.Cell0DsCoordinates);
+                           mesh.Cell0DsCoordinates,
+                             points_properties);
 
     utilities.ExportSegments("./Cell1Ds.inp",
                              mesh.Cell0DsCoordinates,
-                             mesh.Cell1DsExtrema);
+                             mesh.Cell1DsExtrema,
+                             points_properties,
+                             segmnents_properties);
     
     utilities.ExportPolygons("./Cell2Ds.inp",
                               mesh.Cell0DsCoordinates,

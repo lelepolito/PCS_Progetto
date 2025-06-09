@@ -230,22 +230,48 @@ unsigned int GetorCreatePoint(PolyhedralMesh& mesh,double& x, double& y, double&
 void Export_Polyhedron(PolyhedralMesh& P)
 {
     //Cell0Ds.txt
-    ofstream ofile1("Cell0Ds.txt");
-    ofile1 << "Id;X;Y;Z\n"; //header 
-    
-    const MatrixXd &A = P.Cell0DsCoordinates;
-    for(unsigned int id=0; id < P.NumCell0Ds; id++)
-        ofile1 << defaultfloat << id << ';' << scientific << setprecision(16) << A(0,id) << ';' << A(1,id) << ';' << A(2,id) << '\n';
-    ofile1.close();
+    // Cell0Ds.txt
+ofstream ofile1("Cell0Ds.txt");
+ofile1 << "Id;Marker;X;Y;Z\n"; // header 
 
-    //Cell1Ds.txt
-    ofstream ofile2("Cell1Ds.txt");
-    ofile2 << "Id;Origin;End\n"; //header
+const MatrixXd &A = P.Cell0DsCoordinates;
+for (unsigned int id = 0; id < P.NumCell0Ds; id++) {
+    unsigned int marker = 0; // valore di default
 
-    const MatrixXi &B = P.Cell1DsExtrema;
-    for(unsigned int id=0; id < P.NumCell1Ds; id++)
-        ofile2 << id << ';' << B(0,id) << ';' << B(1,id) << '\n';
-    ofile2.close();
+    // Cerca il marker per questo ID
+    for (const auto& [m, id_list] : P.Cell0DsMarker) {
+        if (std::find(id_list.begin(), id_list.end(), id) != id_list.end()) {
+            marker = m;
+            break;
+        }
+    }
+
+    ofile1 << defaultfloat << id << ';' << marker << ';' 
+           << scientific << setprecision(16) 
+           << A(0, id) << ';' << A(1, id) << ';' << A(2, id) << '\n';
+}
+ofile1.close();
+
+
+// Cell1Ds.txt
+ofstream ofile2("Cell1Ds.txt");
+ofile2 << "Id;Marker;Origin;End\n"; // header
+
+const MatrixXi &B = P.Cell1DsExtrema;
+for (unsigned int id = 0; id < P.NumCell1Ds; id++) {
+    unsigned int marker = 0; // valore di default
+
+    // Cerca il marker per questo ID
+    for (const auto& [m, id_list] : P.Cell1DsMarker) {
+        if (std::find(id_list.begin(), id_list.end(), id) != id_list.end()) {
+            marker = m;
+            break;
+        }
+    }
+
+    ofile2 << id << ';' << marker << ';' << B(0, id) << ';' << B(1, id) << '\n';
+}
+ofile2.close();
 
     //Cell2Ds.txt
     ofstream ofile3("Cell2Ds.txt");
