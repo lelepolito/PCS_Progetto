@@ -42,6 +42,10 @@
 # MAC
 *.DS_Store
 
+# File generati dal programma
+*.inp
+*.txt
+
 # CMake con cmakelists lasciato fuori
 CMakeCache.txt
 CMakeFiles

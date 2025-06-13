@@ -15,47 +15,66 @@ using namespace Eigen;
 using namespace std;
 using namespace PolygonalLibrary;
 
-TEST(TestPolyhedron, TestCentralize1)
-{	
+
+TEST(TestPolyhedron, TestNormalize1) {
     PolyhedralMesh mesh;
-	int n=6;
-	mesh.NumCell0Ds = n;
-	MatrixXd matrice(3,n);
-	matrice << 0.593, -0.711,  0.322, -0.112,  0.001,  0.689,
-               0.463,  0.245, -0.832, -0.408,  0.863, -0.655,
-               0.659,  0.658,  0.451,  0.906, -0.505,  0.316;
-	mesh.Cell0DsCoordinates = matrice.eval();
-	PolyhedralMesh meshNorm;
-	meshNorm.NumCell0Ds = n;
-	meshNorm.Cell0DsCoordinates = mesh.Cell0DsCoordinates;
-    Normalize(mesh);
-	bool test = mesh.Cell0DsCoordinates.isApprox(meshNorm.Cell0DsCoordinates,1e-5);
-	EXPECT_TRUE(test);
+    mesh.NumCell0Ds = 3;
+    mesh.Cell0DsId = {0, 1, 2};
+    mesh.Cell0DsCoordinates.resize(3, 3);
+
+    mesh.Cell0DsCoordinates.col(0) = Vector3d(0.0, 0.0, 0.0);  
+    mesh.Cell0DsCoordinates.col(1) = Vector3d(1.0, 1.0, 1.0);  
+    mesh.Cell0DsCoordinates.col(2) = Vector3d(0.0, 3.0, 4.0);  
+
+    EXPECT_TRUE(Normalize(mesh));
+
+    
+    Vector3d v0 = mesh.Cell0DsCoordinates.col(0);
+    EXPECT_DOUBLE_EQ(v0.norm(), 0.0);
+
+    for (int i = 1; i < 3; ++i) {
+        Vector3d v = mesh.Cell0DsCoordinates.col(i);
+        EXPECT_NEAR(v.norm(), 1.0, 1e-6);
+    }
+}
+TEST(TestPolyhedron, TestNormalize2) {
+    PolyhedralMesh mesh;
+    mesh.NumCell0Ds = 3;
+    mesh.Cell0DsId = {0, 1, 2};
+    mesh.Cell0DsCoordinates.resize(3, 3);
+
+    mesh.Cell0DsCoordinates.col(0) = Vector3d(1.0, 0.0, 0.0);
+    mesh.Cell0DsCoordinates.col(1) = Vector3d(0.0, 1.0, 0.0);
+    mesh.Cell0DsCoordinates.col(2) = Vector3d(0.0, 0.0, 1.0);
+
+    EXPECT_TRUE(Normalize(mesh));
+
+    for (int i = 0; i < 3; ++i) {
+        Eigen::Vector3d v = mesh.Cell0DsCoordinates.col(i);
+        EXPECT_NEAR(v.norm(), 1.0, 1e-6);
+    }
 }
 
-TEST(TestPolyhedron, TestCentralize2)
-{	
+TEST(TestPolyhedron, TestNormalize3) {
     PolyhedralMesh mesh;
-	int n=6;
-	mesh.NumCell0Ds = n;
-	MatrixXd matrice(3,n);
-	matrice <<
-    0.593 * 4.2,  -0.711 * 9.1,   0.322 * 2.8,  -0.112 * 6.7,   0.001 * 1.3,   0.689 * 7.5,
-    0.463 * 4.2,   0.245 * 9.1,  -0.832 * 2.8,  -0.408 * 6.7,   0.863 * 1.3,  -0.655 * 7.5,
-    0.659 * 4.2,   0.658 * 9.1,   0.451 * 2.8,   0.906 * 6.7,  -0.505 * 1.3,   0.316 * 7.5;
-	mesh.Cell0DsCoordinates = matrice.eval();
-    Normalize(mesh);
-	PolyhedralMesh meshNorm;
-	meshNorm.NumCell0Ds = n;
-	MatrixXd matrice2(3,n);
-	matrice2 <<  
-    0.593, -0.711,  0.322, -0.112,  0.001,  0.689,
-    0.463,  0.245, -0.832, -0.408,  0.863, -0.655,
-    0.659,  0.658,  0.451,  0.906, -0.505,  0.316;
-	meshNorm.Cell0DsCoordinates = matrice2.eval();
-	bool test = mesh.Cell0DsCoordinates.isApprox(meshNorm.Cell0DsCoordinates,1e-5);
-	EXPECT_TRUE(test);
+    mesh.NumCell0Ds = 3;
+    mesh.Cell0DsId = {0, 1, 2};
+    mesh.Cell0DsCoordinates.resize(3, 3);
+
+    mesh.Cell0DsCoordinates.col(0) = Vector3d(2.0, 0.0, 0.0);
+    mesh.Cell0DsCoordinates.col(1) = Vector3d(0.0, 0.0, -5.0);
+    mesh.Cell0DsCoordinates.col(2) = Vector3d(1.0, 2.0, 2.0);
+
+    EXPECT_TRUE(Normalize(mesh));
+
+    for (int i = 0; i < 3; ++i) {
+        Vector3d v = mesh.Cell0DsCoordinates.col(i);
+        EXPECT_NEAR(v.norm(), 1.0, 1e-6);
+    }
 }
+
+
+
 
 TEST(TestPolyhedron, TestCreateTriFace)
 {
@@ -65,8 +84,8 @@ TEST(TestPolyhedron, TestCreateTriFace)
 	mesh.Cell0DsId = {0,1,2,3};
 	mesh.Cell0DsCoordinates.resize(3, mesh.NumCell0Ds);
 	mesh.Cell0DsCoordinates << 0.0, 1.0, 1.0, 0.0,
-								0.0, 0.0, 1.0, 1.0,
-								0.0, 0.0, 0.0, 0.0;
+							   0.0, 0.0, 1.0, 1.0,
+							   0.0, 0.0, 0.0, 0.0;
 
 	mesh.NumCell1Ds = 6;
 	mesh.Cell1DsId.resize(mesh.NumCell1Ds);
@@ -77,15 +96,7 @@ TEST(TestPolyhedron, TestCreateTriFace)
 
 
 	CreateTriFace(mesh, 3, 3, 2, 2);
-	vector<vector<unsigned int>> expectedVertices = {
-				  {0, 1, 2},
-				  {0, 1, 3},
-				  {0, 2, 3},
-				  {1, 2, 3}};
 	EXPECT_EQ(mesh.NumCell2Ds, 4);
-	/*for (unsigned int i = 0; i < mesh.NumCell2Ds-1; ++i) {
-		EXPECT_EQ(mesh.Cell2DsVertices[i], expectedVertices[i]);
-	}*/
 }
 
 TEST(TestPolyhedron, TestTriangulateClassII)
@@ -132,6 +143,49 @@ TEST(TestPolyhedron, TestTriangulateClassII)
 	EXPECT_EQ(mesh.NumCell0Ds, 14);	
 }
 
+TEST(TestPolyhedron, TestCentralize1) {
+    PolyhedralMesh mesh;
+    mesh.NumCell0Ds = 3;
+    mesh.Cell0DsId = {0, 1, 2};
+    mesh.Cell0DsCoordinates.resize(3, 3);
+
+    // Tre punti non centrati
+    mesh.Cell0DsCoordinates.col(0) = Vector3d(1.0, 0.0, 0.0);
+    mesh.Cell0DsCoordinates.col(1) = Vector3d(2.0, 1.0, -1.0);
+    mesh.Cell0DsCoordinates.col(2) = Vector3d(3.0, 2.0, 1.0);
+
+    EXPECT_TRUE(Centralize(mesh));
+
+    // Calcolo il nuovo baricentro
+    Vector3d centroid = Vector3d::Zero();
+    for (int i = 0; i < 3; ++i)
+        centroid += mesh.Cell0DsCoordinates.col(i);
+
+    centroid /= 3.0;
+
+    // Il baricentro deve essere (0,0,0) con una tolleranza
+    EXPECT_NEAR(centroid(0), 0.0, 1e-9);
+    EXPECT_NEAR(centroid(1), 0.0, 1e-9);
+    EXPECT_NEAR(centroid(2), 0.0, 1e-9);
+}
+
+TEST(TestPolyhedron, TestCentralize2) {
+    PolyhedralMesh mesh;
+    mesh.NumCell0Ds = 2;
+    mesh.Cell0DsId = {0, 1};
+    mesh.Cell0DsCoordinates.resize(3, 2);
+
+    // Due punti simmetrici rispetto all'origine
+    mesh.Cell0DsCoordinates.col(0) = Vector3d(-1.0, 0.0, 0.0);
+    mesh.Cell0DsCoordinates.col(1) = Vector3d(1.0, 0.0, 0.0);
+
+    EXPECT_TRUE(Centralize(mesh));
+
+    // Dovrebbero essere spostati in -1 e +1 -> -1-0.5 = -1.5 e 1-0.5 = 0.5 -> quindi il centro è (0,0,0)
+    Vector3d centroid = (mesh.Cell0DsCoordinates.col(0) + mesh.Cell0DsCoordinates.col(1)) / 2.0;
+    EXPECT_NEAR(centroid.norm(), 0.0, 1e-9);
+}
+
 TEST(TestPolyhedron, TestTriangulateClassI)
 {
 	PolyhedralMesh mesh;
@@ -139,9 +193,9 @@ TEST(TestPolyhedron, TestTriangulateClassI)
 	mesh.Cell0DsId.resize(mesh.NumCell0Ds);
 	mesh.Cell0DsId = {0,1,2,3};
 	mesh.Cell0DsCoordinates.resize(3, mesh.NumCell0Ds);
-	mesh.Cell0DsCoordinates << 0.0, 1.0, 0.0, 0.0,
-							   0.0, 0.0, 1.0, 0.0,
-							   0.0, 0.0, 0.0, 1.0;
+	mesh.Cell0DsCoordinates << 1.0, 1.0, 0.0, 0.0,
+							   1.0, 0.0, 1.0, 0.0,
+							   1.0, 0.0, 0.0, 1.0;
 
 	mesh.NumCell1Ds = 6;
 	mesh.Cell1DsId.resize(mesh.NumCell1Ds);
@@ -202,6 +256,7 @@ TEST(TestPolyhedron, TestGetorCreatePoint1)
 {
 	PolyhedralMesh mesh;
 	mesh.NumCell0Ds = 0;
+    mesh.NumCell2Ds = 0;
 	double x = 0.0, y = 1.0, z = 2.0;
 	unsigned int l = 0;
 	unsigned int pointId = GetorCreatePoint(mesh, x, y, z, l);
@@ -216,9 +271,12 @@ TEST(TestPolyhedron, TestGetorCreatePoint2)
 {
 	PolyhedralMesh mesh;
 	mesh.NumCell0Ds = 1;
+	mesh.NumCell1Ds = 1;
 	mesh.Cell0DsId.push_back(0);
 	mesh.Cell0DsCoordinates.resize(3, mesh.NumCell0Ds);
-	mesh.Cell0DsCoordinates << 0.0, 1.0, 2.0;
+	mesh.Cell0DsCoordinates << 0.0,
+							   1.0,
+							   2.0;
 	double x = 0.0, y = 1.0, z = 2.0;
 	unsigned int l = 0;
 	unsigned int pointId = GetorCreatePoint(mesh, x, y, z, l);
