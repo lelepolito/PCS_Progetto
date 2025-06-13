@@ -74,7 +74,22 @@ TEST(TestPolyhedron, TestNormalize3) {
 }
 
 
+TEST(TestPokyhedron, TestDistance)
+{
+	PolyhedralMesh mesh;
+	mesh.NumCell0Ds = 3;
+	mesh.Cell0DsId = {0, 1, 2};
+	mesh.Cell0DsCoordinates.resize(3, 3);
 
+	mesh.Cell0DsCoordinates.col(0) = Vector3d(1.0, 0.0, 0.0);
+	mesh.Cell0DsCoordinates.col(1) = Vector3d(2.0, 1.0, -1.0);
+	mesh.Cell0DsCoordinates.col(2) = Vector3d(3.0, 2.0, 1.0);
+
+	double dist = Distance(mesh, 0, 1);
+    double dist2 = Distance(mesh, 1, 2);
+	EXPECT_NEAR(dist2, sqrt(6), 1e-6);
+	EXPECT_NEAR(dist, sqrt(3), 1e-6);
+}
 
 TEST(TestPolyhedron, TestCreateTriFace)
 {
