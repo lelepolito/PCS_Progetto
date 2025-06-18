@@ -113,17 +113,12 @@ int main() {
         }
     }
     cout << "Triangulation riuscita." << endl;
-/*
-    if (PolygonalLibrary::Normalize(mesh)) {
-        cout << "Mesh normalizzato." << endl;
-    } else {
-        cout << "Mesh non normalizzato." << endl;
-    }*/
 
 
 
 
-    // 4. Costruisci lista di adiacenza (popola adjacency)
+
+    //Costruisco lista di adiacenza 
 unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = PolygonalLibrary::buildAdjacencyList(mesh.Cell2DsVertices);
 
 cout << "Lista di adiacenza:\n";
@@ -138,13 +133,13 @@ for (const auto& [u, neighbors] : adjacency) {
 
 
 
-// 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
+// controllo se start e end esistono nel grafo
 if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
     cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
     return EXIT_FAILURE;
 }
 
-// 6. Calcolo cammino minimo
+//Calcolo cammino minimo
 
 unsigned int n = 0;
 for (const auto& [u, _] : adjacency) {
@@ -170,7 +165,7 @@ PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker
     }
 
         
-    //ShortPath property
+    //ShortestPath property
     vector<Gedim::UCDProperty<double>> points_properties;
     vector<Gedim::UCDProperty<double>> segmnents_properties;
     points_properties.reserve(1); //We have only one Property
@@ -179,7 +174,7 @@ PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker
     vector<double> prop_vert(mesh.NumCell0Ds, 0.0);
     vector<double> prop_edges(mesh.NumCell1Ds, 0.0);
 
-    //Fill the struct points_properties
+    //proprietà dei punti della struct
     Gedim::UCDProperty<double> pointP;
     pointP.Label = "ShortPath";
     pointP.NumComponents = 1;
@@ -187,7 +182,7 @@ PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker
     points_properties.push_back(pointP);
 
 
-    //Fill the struct segments_properties
+    //proprietà dei segmenti della struct
    Gedim::UCDProperty<double> edgeP;
    edgeP.Label = "ShortPath";
    edgeP.NumComponents = 1;
@@ -202,7 +197,7 @@ for (const auto& pair : mesh.Cell0DsMarker) {
    if (marker == 1) {
        for (unsigned int id : vert_ids) {
            if (id < prop_vert.size()) {
-               prop_vert[id] = 1.0; // imposta il valore per identificare i vertici marcati
+               prop_vert[id] = 1.0; // imposto il valore per identificare i vertici marcati
            }
        }
    }
