@@ -437,7 +437,7 @@ bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, c
         mesh.Cell1DsExtrema = mesh.Cell1DsExtrema.rightCols(mesh.NumCell1Ds).eval();        
         CreateTriFace(mesh,p,q,b,c);
     }
-    if (b == c == 1){
+    if (b == c && b == 1){
         unsigned int numlati = mesh.NumCell1Ds;   
         for (unsigned int i = 0; i < mesh.NumCell2Ds; ++i) {
             MatrixXd A(3,1), B(3,1), C(3,1),R(3,1);
@@ -521,7 +521,8 @@ void CalculateFaceCentroids(const PolyhedralMesh& originalMesh, PolyhedralMesh& 
         dualMesh.Cell0DsCoordinates(1, faceId) = centroidY;
         dualMesh.Cell0DsCoordinates(2, faceId) = centroidZ;
     }
-    
+    dualMesh.Cell0DsMarker[0].resize(dualMesh.NumCell0Ds); // Inizializza il marker per i vertici
+    dualMesh.Cell0DsMarker[0].assign(dualMesh.Cell0DsId.begin(), dualMesh.Cell0DsId.end()); // Usa gli ID dei vertici come marker
     cout << "Created " << dualMesh.NumCell0Ds << " centroid vertices for dual mesh." << endl;
 }
 void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh)
@@ -574,6 +575,8 @@ void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMes
     dualMesh.NumCell1Ds = dualEdgeIds.size();
     dualMesh.Cell1DsId = dualEdgeIds;
     dualMesh.Cell1DsExtrema.resize(2, dualMesh.NumCell1Ds);
+    dualMesh.Cell1DsMarker[0].resize(dualMesh.NumCell1Ds); // Inizializza il marker per gli edge
+    dualMesh.Cell1DsMarker[0].assign(dualEdgeIds.begin(), dualEdgeIds.end()); // Usa gli ID degli edge come marker
     
     for (unsigned int i = 0; i < dualMesh.NumCell1Ds; ++i) {
         dualMesh.Cell1DsExtrema(0, i) = dualEdgeExtrema[i].first;
@@ -684,56 +687,8 @@ void CreateDualFaces(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMes
     dualMesh.NumCell2Ds = dualMesh.Cell2DsId.size();
     cout << "Create " << dualMesh.NumCell2Ds << " facce per mesh duale." << endl;
 }
-void ProjectDualToSphere(PolyhedralMesh& dualMesh)
-{
-    cout << "Proietto la mesh duale sulla sfera unitaria..." << endl;
-    
-    if (dualMesh.NumCell0Ds == 0) {
-        cerr << "Nessun vertice da proiettare sulla mesh duale" << endl;
-        return;
-    }
-    
-    // Per ogni vertice del duale
-    for (unsigned int i = 0; i < dualMesh.NumCell0Ds; ++i) {
-        
-        // Calcola la norma del punto
-        double x = dualMesh.Cell0DsCoordinates(0, i);
-        double y = dualMesh.Cell0DsCoordinates(1, i);
-        double z = dualMesh.Cell0DsCoordinates(2, i);
-        
-        double norm = sqrt(x*x + y*y + z*z);
-        
-        // Proietta sulla sfera unitaria
-        if (norm > 0) {  // Evita divisioni per zero
-            dualMesh.Cell0DsCoordinates(0, i) = x / norm;
-            dualMesh.Cell0DsCoordinates(1, i) = y / norm;
-            dualMesh.Cell0DsCoordinates(2, i) = z / norm;
-        }
-    }
-    
-    cout << "Proiettato " << dualMesh.NumCell0Ds << "vertici duali sulla sfera." << endl;
-}
-void ExportDualFiles(const PolyhedralMesh& dualMesh)
-{
-    cout << "esporto file duali" << endl;
-    
-    // Export dei punti del duale per Paraview
-    Gedim::UCDUtilities utilities;
-    
-    utilities.ExportPoints("./dualCell0Ds.inp",
-                           dualMesh.Cell0DsCoordinates);
-    
-    utilities.ExportSegments("./dualCell1Ds.inp",
-                             dualMesh.Cell0DsCoordinates,
-                             dualMesh.Cell1DsExtrema);
-    
-    //utilities.ExportPolygons("./dualCell2Ds.inp",
-                              //dualMesh.Cell0DsCoordinates,
-                             // dualMesh.Cell2DsVertices);
-    
-    cout << "dile duali esportati: dualCell0Ds.inp, dualCell1Ds.inp, dualCell2Ds.inp" << endl;
-}
-bool CalculateAndExportDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c)
+
+PolyhedralMesh CalculateDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c)
 {
     PolyhedralMesh dualMesh;
     
@@ -745,15 +700,9 @@ bool CalculateAndExportDual(PolyhedralMesh& mesh, const int& p, const int& q, co
     
     cout << "Step 3: creo facce duali..." << endl;
     CreateDualFaces(mesh, dualMesh);
-    cout << "Step 4: proietto sulla sfera..." << endl;
-    ProjectDualToSphere(dualMesh);
     
-     cout << "Step 5: esporto i file..." << endl;
-    ExportDualFiles(dualMesh);
-    
-    cout << "calcolo del duale ed esportazione avvenuti con successo!" << endl;
-    
-    return true;
+    cout << "calcolo del duale ed esportazione avvenuti con successo!" << endl;    
+    return dualMesh;
 }
 
 // funzione che centralizza la mesh
@@ -925,10 +874,6 @@ std::unordered_map<unsigned int, std::unordered_set<unsigned int>> buildAdjacenc
     return adjacency;
 }
 
-
-
-
-
 std::list<unsigned int> bfs_shortest_path(
     const unordered_map<unsigned int, unordered_set<unsigned int>>& adjacency,
     int start,
@@ -1089,6 +1034,45 @@ for (unsigned int vertex : archiCammino)  {
         
     }
 
+// legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
+bool inputdati(int &p, int &q, int &b, int &c, int &start, int &end, bool &search) {
+    const int DEFAULT_START = 0;
+    const int DEFAULT_END   = 0;
+    cout << "Inserisci p, q, b, c [start end] (start ed end sono opzionali): ";
+    string line;
+    // Legge tutta la riga di input
+    if (!getline(cin, line) || line.empty()) {
+        // Se resta un '\n' nel buffer, rilancia una getline
+        if (!getline(cin, line)) {
+            cerr << "Errore di lettura della riga di input." << endl;
+            return false;
+        }
+    }
+
+    istringstream iss(line);
+    // Legge i 4 valori obbligatori
+    if (!(iss >> p >> q >> b >> c)) {
+        cerr << "Errore: devi inserire almeno quattro numeri interi (p, q, b, c)." << endl;
+        return false;
+    }
+    // Prova a leggere start e end; se fallisce, usa i default
+    if (!(iss >> start >> end)) {
+        start = DEFAULT_START;
+        end   = DEFAULT_END;
+        search = false; // indica che non sono stati inseriti start ed end
+    }
+
+    // Controlli su p e q
+    if (p < 3 || p > 5) {
+        cerr << "Valore di p non valido (" << p << "): deve essere 3, 4 o 5." << endl;
+        return false;
+    }
+    if (q < 3 || q > 5) {
+        cerr << "Valore di q non valido (" << q << "): deve essere 3, 4 o 5." << endl;
+        return false;
+    }
+    return true;
+}
 
 
 } // namespace PolygonalLibrary

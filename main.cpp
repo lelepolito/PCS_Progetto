@@ -14,14 +14,37 @@
 #include "struttura.hpp"
 #include <iomanip>
 using namespace std;
+using namespace PolygonalLibrary;
 
 // legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
-bool quadinput(int &p, int &q, int &b, int &c, int& start, int& end) {
-    cout << "Inserisci interi p, q, b, c, start, end: ";
-    if (!(cin >> p >> q >> b >> c >> start >> end)) {
-        cerr << "Errore di lettura: inserisci quattro numeri interi." << endl;
+bool input(int &p, int &q, int &b, int &c, int &start, int &end, bool &search) {
+    const int DEFAULT_START = 0;
+    const int DEFAULT_END   = 0;
+    cout << "Inserisci p, q, b, c [start end] (start ed end sono opzionali): ";
+    string line;
+    // Legge tutta la riga di input
+    if (!getline(cin, line) || line.empty()) {
+        // Se resta un '\n' nel buffer, rilancia una getline
+        if (!getline(cin, line)) {
+            cerr << "Errore di lettura della riga di input." << endl;
+            return false;
+        }
+    }
+
+    istringstream iss(line);
+    // Legge i 4 valori obbligatori
+    if (!(iss >> p >> q >> b >> c)) {
+        cerr << "Errore: devi inserire almeno quattro numeri interi (p, q, b, c)." << endl;
         return false;
     }
+    // Prova a leggere start e end; se fallisce, usa i default
+    if (!(iss >> start >> end)) {
+        start = DEFAULT_START;
+        end   = DEFAULT_END;
+        search = false; // indica che non sono stati inseriti start ed end
+    }
+
+    // Controlli su p e q
     if (p < 3 || p > 5) {
         cerr << "Valore di p non valido (" << p << "): deve essere 3, 4 o 5." << endl;
         return false;
@@ -33,21 +56,6 @@ bool quadinput(int &p, int &q, int &b, int &c, int& start, int& end) {
     return true;
 }
 
-// dump(A;B) copie dei file CSV A per i file output.txt B 
-bool dumpCSV(const string &infile, const string &outfile) {
-    ifstream fin(infile);
-    if (!fin.is_open()) {
-        cerr << "Impossibile aprire " << infile << endl;
-        return false;
-    }
-    ofstream fout(outfile);
-    if (!fout.is_open()) {
-        cerr << "Impossibile creare " << outfile << endl;
-        return false;
-    }
-    fout << fin.rdbuf();  // copia il contenuto di infile in fout
-    return true;
-}
 
 int main() {
     //   p*10 + q --> basename dei file CSV
@@ -60,7 +68,8 @@ int main() {
     };
 
     int p, q, b, c, start, end;
-    if (!quadinput(p, q, b, c, start, end)) {
+    bool search = true;
+    if (!inputdati(p, q, b, c, start, end, search)) {
         return EXIT_FAILURE;
     }
 
@@ -82,17 +91,12 @@ int main() {
     const string basename = it->second;  // nome del solido (cube, octahedron, ...)
     cout << "Hai scelto: " << basename << endl;
 
-    PolygonalLibrary::PolyhedralMesh mesh;
-    if (!PolygonalLibrary::ImportMesh(mesh, basename)) {
+    PolyhedralMesh mesh;
+    if (!ImportMesh(mesh, basename)) {
         cerr << "ImportMesh fallito per " << basename << endl;
         return EXIT_FAILURE;
     }
-    if (!PolygonalLibrary::ImportCell3Ds(mesh)) {
-        cerr << "ImportCell3Ds fallito per " << basename << endl;
-        return EXIT_FAILURE;
-    }
-
-    if (PolygonalLibrary::Centralize(mesh)) {
+    if (Centralize(mesh)) {
         cout << "Mesh centrato." << endl;
     } else {
         cout << "Mesh non centrato." << endl;
@@ -101,73 +105,68 @@ int main() {
     // Triangolazione: se q==3 triangolo {3,p}, altrimenti {p,q}
     if (q == 3) {
         cout << "Triangulating {3," << p << "} to calculate dual {" << p << ",3}" << endl;
-        if (!PolygonalLibrary::Triangulate(mesh, 3, p, b, c)) {
+        if (!Triangulate(mesh, 3, p, b, c)) {
             cerr << "Triangulation fallita per {3," << p << "}" << endl;
             return EXIT_FAILURE;
         }
     } else {
         cout << "Triangulating standard polyhedron {" << p << "," << q << "}" << endl;
-        if (!PolygonalLibrary::Triangulate(mesh, p, q, b, c)) {
+        if (!Triangulate(mesh, p, q, b, c)) {
             cerr << "Triangulation fallita per " << basename << endl;
             return EXIT_FAILURE;
         }
     }
-    cout << "Triangulation riuscita." << endl;
-/*
-    if (PolygonalLibrary::Normalize(mesh)) {
-        cout << "Mesh normalizzato." << endl;
-    } else {
-        cout << "Mesh non normalizzato." << endl;
-    }*/
 
 
-
-
-    // 4. Costruisci lista di adiacenza (popola adjacency)
-unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = PolygonalLibrary::buildAdjacencyList(mesh.Cell2DsVertices);
-
-cout << "Lista di adiacenza:\n";
-for (const auto& [u, neighbors] : adjacency) {
-    cout << "Vertice " << u << " è adiacente a: ";
-    for (int v : neighbors) {
-        cout << v << " ";
-    }
-    cout << endl;
-}
-
-
-
-
-// 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
-if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
-    cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
-    return EXIT_FAILURE;
-}
-
-// 6. Calcolo cammino minimo
-
-unsigned int n = 0;
-for (const auto& [u, _] : adjacency) {
-    if (u + 1 > n) n = u + 1;
-}
-
-PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker, mesh.Cell1DsMarker,
-                                          mesh.NumCell1Ds, mesh.Cell1DsExtrema);
     // Export dei file .txt 
-    PolygonalLibrary::Export_Polyhedron(mesh);
+
     
     // GESTIONE DEL DUALE quando q == 3
     if (q == 3) {
         cout << "Calculating dual of {3," << p << "} to obtain {" << p << ",3}" << endl;
         
-        if (!PolygonalLibrary::CalculateAndExportDual(mesh, p, q, b, c)) {
-            cerr << "Dual calculation failed" << endl;
-            return EXIT_FAILURE;
-        }
-        cout << "Dual calculation completed." << endl;
+        mesh = CalculateDual(mesh, p, q, b, c);
+
+
     } else {
         cout << "Standard polyhedron construction (no dual calculation needed)." << endl;
     }
+    cout << "Triangulation riuscita." << endl;
+
+    if (Normalize(mesh)) {
+        cout << "Mesh normalizzato." << endl;
+    } else {
+        cout << "Mesh non normalizzato." << endl;
+    }
+
+if (search == true) {
+    // 4. Costruisci lista di adiacenza (popola adjacency)
+    unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(mesh.Cell2DsVertices);
+
+    cout << "Lista di adiacenza:\n";
+    for (const auto& [u, neighbors] : adjacency) {
+        cout << "Vertice " << u << " è adiacente a: ";
+        for (int v : neighbors) {
+            cout << v << " ";
+        }
+        cout << endl;
+    }
+
+    // 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
+    if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
+        cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
+        return EXIT_FAILURE;
+    }
+
+    // 6. Calcolo cammino minimo
+
+    unsigned int n = 0;
+    for (const auto& [u, _] : adjacency) {
+        if (u + 1 > n) n = u + 1;
+    }
+
+    bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker, mesh.Cell1DsMarker,
+                                          mesh.NumCell1Ds, mesh.Cell1DsExtrema);
 
         
     //ShortPath property
@@ -195,30 +194,31 @@ PolygonalLibrary::bfs_shortest_path(adjacency, start, end, n, mesh.Cell0DsMarker
    segmnents_properties.push_back(edgeP);   
 
 
-for (const auto& pair : mesh.Cell0DsMarker) {
-   unsigned int marker = pair.first;
-   const list<unsigned int>& vert_ids = pair.second;
+    for (const auto& pair : mesh.Cell0DsMarker) {
+        unsigned int marker = pair.first;
+        const list<unsigned int>& vert_ids = pair.second;
 
-   if (marker == 1) {
-       for (unsigned int id : vert_ids) {
-           if (id < prop_vert.size()) {
-               prop_vert[id] = 1.0; // imposta il valore per identificare i vertici marcati
-           }
-       }
-   }
-}
-for (const auto& pair : mesh.Cell1DsMarker) {
-   unsigned int marker = pair.first;
-   const list<unsigned int>& edge_ids = pair.second;
+        if (marker == 1) {
+            for (unsigned int id : vert_ids) {
+                if (id < prop_vert.size()) {
+                    prop_vert[id] = 1.0; // imposta il valore per identificare i vertici marcati
+                }
+            }
+        }
+    }
+    for (const auto& pair : mesh.Cell1DsMarker) {
+        unsigned int marker = pair.first;
+        const list<unsigned int>& edge_ids = pair.second;
 
-   if (marker == 1) {
-       for (unsigned int id : edge_ids) {
-           if (id < prop_edges.size()) {
-               prop_edges[id] = 1.0; 
+        if (marker == 1) {
+           for (unsigned int id : edge_ids) {
+               if (id < prop_edges.size()) {
+                   prop_edges[id] = 1.0; 
+               }
            }
-       }
-   }
-}
+        }
+    }
+    cout << "Cammino minimo tra " << start << " e " << end << ": ";
     // Export dei file .inp per Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
@@ -230,11 +230,29 @@ for (const auto& pair : mesh.Cell1DsMarker) {
                              mesh.Cell1DsExtrema,
                              points_properties,
                              segmnents_properties);
-    
-    utilities.ExportPolygons("./Cell2Ds.inp",
-                              mesh.Cell0DsCoordinates,
-                              mesh.Cell2DsVertices);
-    
+    if (q != 3) {
+        // Solo se non è il caso del duale {3,p}
+        utilities.ExportPolygons("./Cell2Ds.inp",
+                                mesh.Cell0DsCoordinates,
+                                mesh.Cell2DsVertices);
+    }
+}
+   
+    if (search == false) {
+        Gedim::UCDUtilities utilities;
+        utilities.ExportPoints("./Cell0Ds.inp",
+                                mesh.Cell0DsCoordinates);
+
+        utilities.ExportSegments("./Cell1Ds.inp",
+                                mesh.Cell0DsCoordinates,
+                                mesh.Cell1DsExtrema);
+        if (q != 3) {
+            utilities.ExportPolygons("./Cell2Ds.inp",
+                                    mesh.Cell0DsCoordinates,
+                                    mesh.Cell2DsVertices);
+        }
+    }
+    Export_Polyhedron(mesh);
     cout << "File generati: Cell0Ds.txt, Cell1Ds.txt, Cell2Ds.txt, Cell3Ds.txt" << endl;
     cout << "File Paraview: Cell0Ds.inp, Cell1Ds.inp, Cell2Ds.inp" << endl;
     

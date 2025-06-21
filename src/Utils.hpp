@@ -30,22 +30,15 @@ void CalculateFaceCentroids(const PolyhedralMesh& originalMesh, PolyhedralMesh& 
 void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh);
 void CreateDualFaces(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh);
 vector<unsigned int> OrderDualFaceVertices(const vector<unsigned int>& faceVertices, const PolyhedralMesh& dualMesh);
-void ProjectDualToSphere(PolyhedralMesh& dualMesh);
-void ExportDualFiles(const PolyhedralMesh& dualMesh);
-bool CalculateAndExportDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c);
+PolyhedralMesh CalculateDual(PolyhedralMesh& mesh, const int& p, const int& q, const int& b, const int& c);
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2);
-std::unordered_map<unsigned int, std::unordered_set<unsigned int>> buildAdjacencyList(const std::vector<std::vector<unsigned int>>& Cell2DsVertices);
-std::list<unsigned int> bfs_shortest_path(
-    const std::unordered_map<unsigned int, std::unordered_set<unsigned int>>& adjacency,
-    int start,
-    int end,
-    int n,
-    std::map<unsigned int, std::list<unsigned int>>& Cell0DsMarker,
-    std::map<unsigned int, std:: list<unsigned int>>& Cell1DsMarker,
-    unsigned int NumCell1Ds,
-    MatrixXi Cell1DsExtrema
-    );
-
+unordered_map<unsigned int, unordered_set<unsigned int>> buildAdjacencyList(const vector<vector<unsigned int>>& Cell2DsVertices);
+list<unsigned int> bfs_shortest_path(
+    const unordered_map<unsigned int,unordered_set<unsigned int>>& adjacency,
+    int start,int end,int n,
+    map<unsigned int,list<unsigned int>>& Cell0DsMarker,map<unsigned int,list<unsigned int>>& Cell1DsMarker,
+    unsigned int NumCell1Ds,MatrixXi Cell1DsExtrema);
+bool inputdati(int &p, int &q, int &b, int &c, int &start, int &end, bool &search);
 } // namespace PolygonalLibrary
 
 
