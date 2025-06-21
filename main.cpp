@@ -16,46 +16,6 @@
 using namespace std;
 using namespace PolygonalLibrary;
 
-// legge 4 interi p, q, b, c  devo avere p, q ∈ [3,5]
-bool input(int &p, int &q, int &b, int &c, int &start, int &end, bool &search) {
-    const int DEFAULT_START = 0;
-    const int DEFAULT_END   = 0;
-    cout << "Inserisci p, q, b, c [start end] (start ed end sono opzionali): ";
-    string line;
-    // Legge tutta la riga di input
-    if (!getline(cin, line) || line.empty()) {
-        // Se resta un '\n' nel buffer, rilancia una getline
-        if (!getline(cin, line)) {
-            cerr << "Errore di lettura della riga di input." << endl;
-            return false;
-        }
-    }
-
-    istringstream iss(line);
-    // Legge i 4 valori obbligatori
-    if (!(iss >> p >> q >> b >> c)) {
-        cerr << "Errore: devi inserire almeno quattro numeri interi (p, q, b, c)." << endl;
-        return false;
-    }
-    // Prova a leggere start e end; se fallisce, usa i default
-    if (!(iss >> start >> end)) {
-        start = DEFAULT_START;
-        end   = DEFAULT_END;
-        search = false; // indica che non sono stati inseriti start ed end
-    }
-
-    // Controlli su p e q
-    if (p < 3 || p > 5) {
-        cerr << "Valore di p non valido (" << p << "): deve essere 3, 4 o 5." << endl;
-        return false;
-    }
-    if (q < 3 || q > 5) {
-        cerr << "Valore di q non valido (" << q << "): deve essere 3, 4 o 5." << endl;
-        return false;
-    }
-    return true;
-}
-
 
 int main() {
     //   p*10 + q --> basename dei file CSV
