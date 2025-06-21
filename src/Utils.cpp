@@ -864,7 +864,7 @@ std::unordered_map<unsigned int, std::unordered_set<unsigned int>> buildAdjacenc
 
         for (size_t i = 0; i < numVertices; ++i) {
             unsigned int u = face[i];
-            unsigned int v = face[(i + 1) % numVertices]; //serve per chiudere il
+            unsigned int v = face[(i + 1) % numVertices]; //serve per chiudere il ciclo, collega l'ultimo vertice al primo
 
             // Aggiungi arco bidirezionale
             adjacency[u].insert(v);
@@ -900,37 +900,29 @@ std::list<unsigned int> bfs_shortest_path(
                     predecessor[v] = u;
                     q.push(v);
     
-                    if (v == end) {  // Fermati appena trovi il nodo finale
-                        q = std::queue<int>(); // svuota la coda forzatamente
+                    if (v == end) {  // si ferma appena trovi il nodo finale
+                        q = std::queue<int>(); 
                         break;
                     }
                 }
             }
         }
     
-        // Se end non è stato raggiunto
+        // se end non è stato raggiunto
         if (!visited[end]) {
-            return {}; // Cammino vuoto = nessun cammino trovato
+            return {}; // cammino vuoto = nessun cammino trovato
         }
     
-        // Ricostruisci il cammino minimo da start a end
-        /*std::vector<int> path;     
-        for (int at = end; at != -1; at = predecessor[at]) {
-            path.push_back(at);
-        }
-        std::reverse(path.begin(), path.end());
-        std::list<unsigned int> list_path; */
+     
 
-        // Ricostruisci il cammino minimo da start a end
+        // ricostruisce il cammino minimo da start a end
         list<unsigned int> path;
         for (int at = end; at != -1; at = predecessor[at]) {
             path.push_front(at);
         }
         
         
-        /*for (int val : path) {
-            path.push_back(static_cast<unsigned int>(val));  
-        } */
+        
 
         //modifico il marker del cammino minimo a 1
         for (unsigned int vertex : path)  { 
@@ -939,14 +931,14 @@ std::list<unsigned int> bfs_shortest_path(
             auto it0 = std::find(list0.begin(), list0.end(), vertex);
             
             if (it0 != list0.end()) {
-                // Rimuovilo da 0
+                // rimuove da 0
                 list0.erase(it0);
         
-                // Aggiungilo a 1
+                // aggiunge a 1
                 Cell0DsMarker[1].push_back(vertex);
             }
         }
-         // 7. Stampa risultato
+         //stampa risultato
          if (path.empty()) {
             cout << "Nessun cammino esiste tra " << start << " e " << end << ".\n"; }
         else {
@@ -958,31 +950,15 @@ std::list<unsigned int> bfs_shortest_path(
         }
 
 
-        if (path.empty()) {
-            cout << "Nessun cammino esiste tra " << start << " e " << end << ".\n"; }
-        else {
-            cout << "\nCammino minimo tra " << start << " e " << end << ": ";
-            for (int v : path) {
-                cout << v << " ";
-        }
-        cout << "\nLunghezza (in spigoli): " << path.size() - 1 << "\n"; }
-
-        // Stampa archi del cammino minimo
-        /*cout << "Archi del cammino minimo: ";
-        for (size_t i = 0; i + 1 < path.size(); ++i) {
-            cout << "(" << path[i] << "," << path[i+1] << ") ";
-        }
-        cout << "\n";
-        } */
         
-// Stampa archi del cammino minimo
+// stampa archi del cammino minimo
 cout << "Archi del cammino minimo: ";
 for (auto it = path.begin(); next(it) != path.end(); ++it) {
     cout << "(" << *it << "," << *next(it) << ") ";
 }
 cout << "\n";
 
-// Lista per contenere gli ID degli archi
+// lista per contenere gli ID degli archi
 list<unsigned int> archiCammino;
 
 for (auto it = path.begin(); next(it) != path.end(); ++it) {
@@ -1005,7 +981,7 @@ for (auto it = path.begin(); next(it) != path.end(); ++it) {
     }
 }
 
-// Stampa gli ID degli archi del cammino minimo
+// stampa gli ID degli archi del cammino minimo
 cout << "ID archi del cammino minimo: ";
 for (auto idArco : archiCammino) {
     cout << idArco << " ";
@@ -1014,15 +990,15 @@ cout << endl;
 
 
 for (unsigned int vertex : archiCammino)  { 
-    // Cerca l'arco in Cell1DsMarker[0]
+    // cerca l'arco in Cell1DsMarker[0]
     auto& list1 = Cell1DsMarker[0];
     auto it1 = find(list1.begin(), list1.end(), vertex);
     
     if (it1 != list1.end()) {
-        // Rimuovilo da 0
+        //rimuove da da 0
         list1.erase(it1);
 
-        // Aggiungilo a 1
+        //aggiunge a 1
         Cell1DsMarker[1].push_back(vertex);
     }
             

@@ -100,7 +100,7 @@ int main() {
     }
 
 if (search == true) {
-    // 4. Costruisci lista di adiacenza (popola adjacency)
+    // costruisce lista di adiacenza (popola adjacency)
     unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(mesh.Cell2DsVertices);
 
     cout << "Lista di adiacenza:\n";
@@ -112,13 +112,13 @@ if (search == true) {
         cout << endl;
     }
 
-    // 5. Ora puoi controllare se start e end esistono nel grafo (adjacency)
+    // controlla se start e end esistono nel grafo 
     if (adjacency.find(start) == adjacency.end() || adjacency.find(end) == adjacency.end()) {
         cerr << "Errore: uno dei vertici non esiste nel grafo." << endl;
         return EXIT_FAILURE;
     }
 
-    // 6. Calcolo cammino minimo
+    //calcola cammino minimo
 
     unsigned int n = 0;
     for (const auto& [u, _] : adjacency) {
@@ -129,7 +129,7 @@ if (search == true) {
                                           mesh.NumCell1Ds, mesh.Cell1DsExtrema);
 
         
-    //ShortPath property
+    //shortPath property
     vector<Gedim::UCDProperty<double>> points_properties;
     vector<Gedim::UCDProperty<double>> segmnents_properties;
     points_properties.reserve(1); //We have only one Property
@@ -161,7 +161,7 @@ if (search == true) {
         if (marker == 1) {
             for (unsigned int id : vert_ids) {
                 if (id < prop_vert.size()) {
-                    prop_vert[id] = 1.0; // imposta il valore per identificare i vertici marcati
+                    prop_vert[id] = 1.0; // proprietà 1 per i vertici del cammino minimo
                 }
             }
         }
@@ -178,7 +178,7 @@ if (search == true) {
            }
         }
     }
-    cout << "Cammino minimo tra " << start << " e " << end << ": ";
+    
     // Export dei file .inp per Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
