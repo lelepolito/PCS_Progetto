@@ -64,15 +64,15 @@ int main() {
     
     // Triangolazione: se q==3 triangolo {3,p}, altrimenti {p,q}
     if (q == 3) {
-        cout << "Triangulating {3," << p << "} to calculate dual {" << p << ",3}" << endl;
+        cout << "Triangolazione di {3," << p << "} per calcolare il duale {" << p << ",3}" << endl;
         if (!Triangulate(mesh, 3, p, b, c)) {
-            cerr << "Triangulation fallita per {3," << p << "}" << endl;
+            cerr << "Triangolazione fallita per {3," << p << "}" << endl;
             return EXIT_FAILURE;
         }
     } else {
-        cout << "Triangulating standard polyhedron {" << p << "," << q << "}" << endl;
+        cout << "Triangolazione del poliedro standard {" << p << "," << q << "}" << endl;
         if (!Triangulate(mesh, p, q, b, c)) {
-            cerr << "Triangulation fallita per " << basename << endl;
+            cerr << "Triangolazione fallita per " << basename << endl;
             return EXIT_FAILURE;
         }
     }
@@ -83,15 +83,15 @@ int main() {
     
     // GESTIONE DEL DUALE quando q == 3
     if (q == 3) {
-        cout << "Calculating dual of {3," << p << "} to obtain {" << p << ",3}" << endl;
+        cout << "Calcolo del duale per {3," << p << "} per ottenere {" << p << ",3}" << endl;
         
         mesh = CalculateDual(mesh, p, q, b, c);
 
 
     } else {
-        cout << "Standard polyhedron construction (no dual calculation needed)." << endl;
+        cout << " Costruzione del poliedro standard (calcolo del duale non necessario)." << endl;
     }
-    cout << "Triangulation riuscita." << endl;
+    cout << "Triangolazione riuscita." << endl;
 
     if (Normalize(mesh)) {
         cout << "Mesh normalizzato." << endl;

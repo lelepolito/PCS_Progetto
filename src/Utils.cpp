@@ -523,7 +523,7 @@ void CalculateFaceCentroids(const PolyhedralMesh& originalMesh, PolyhedralMesh& 
     }
     dualMesh.Cell0DsMarker[0].resize(dualMesh.NumCell0Ds); // Inizializza il marker per i vertici
     dualMesh.Cell0DsMarker[0].assign(dualMesh.Cell0DsId.begin(), dualMesh.Cell0DsId.end()); // Usa gli ID dei vertici come marker
-    cout << "Created " << dualMesh.NumCell0Ds << " centroid vertices for dual mesh." << endl;
+    cout << "Creati " << dualMesh.NumCell0Ds << " centroidi dei vertici per mesh duale." << endl;
 }
 void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMesh)
 {
@@ -557,7 +557,7 @@ void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMes
             }
         }
         if (adjacentFaces.size() != 2) {
-            cout << "Warning: Edge " << edgeId << " is not shared by any faces." << endl;
+            cout << "attenzione: arco " << edgeId << " non condiviso da alcuna faccia." << endl;
             continue; // Se l'edge non è condiviso da nessuna faccia, lo saltiamo
         }
         // Ogni edge deve essere condiviso da esattamente 2 facce
@@ -583,7 +583,7 @@ void CreateDualEdges(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMes
         dualMesh.Cell1DsExtrema(1, i) = dualEdgeExtrema[i].second;
     }
     
-    cout << "Created " << dualMesh.NumCell1Ds << " edges for dual mesh." << endl;
+    cout << "Creati " << dualMesh.NumCell1Ds << " archi per mesh duale." << endl;
 }
 vector<unsigned int> OrderDualFaceVertices(const vector<unsigned int>& faceVertices, const PolyhedralMesh& dualMesh)   //ordinamento corretto
 {
@@ -752,7 +752,7 @@ bool ImportCell0Ds(PolyhedralMesh& mesh, const string& filename)
 {
     ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Cannot open vertex file: " << filename << endl;
+        cerr << "impossibile aprire file dei vertici: " << filename << endl;
         return false;
     }
     string line;
@@ -824,7 +824,7 @@ bool ImportCell2Ds(PolyhedralMesh& mesh, const string& filename)
 {
     ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Cannot open face file: " << filename << endl;
+        cerr << "Impossibile aprire file delle facce : " << filename << endl;
         return false;
     }
     string line;
