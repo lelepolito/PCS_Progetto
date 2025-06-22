@@ -192,9 +192,9 @@ unsigned int GetorCreatePoint(PolyhedralMesh& mesh,double& x, double& y, double&
 {
     unsigned int id;
         for (unsigned int i = 0; i < mesh.NumCell0Ds; ++i) {
-        if (abs(mesh.Cell0DsCoordinates(0, i) - x) < eps &&
-            abs(mesh.Cell0DsCoordinates(1, i) - y) < eps &&
-            abs(mesh.Cell0DsCoordinates(2, i) - z) < eps) {
+        if (fabs(mesh.Cell0DsCoordinates(0, i) - x) < eps &&
+            fabs(mesh.Cell0DsCoordinates(1, i) - y) < eps &&
+            fabs(mesh.Cell0DsCoordinates(2, i) - z) < eps) {
                 if (mesh.NumCell2Ds > 0) {
                 auto it = find (mesh.Cell2DsVertices[l].begin(), mesh.Cell2DsVertices[l].end(), i);
                     if (it == mesh.Cell2DsVertices[l].end() ) { 
@@ -375,7 +375,7 @@ bool Triangulate(PolyhedralMesh& mesh,const int& p,const int& q, const int& b, c
                             // Seleziono solo i punti che fanno parte dei triangoli rossi per creare i midpoint della triangolazione II Classe
                             for (auto it3 = Tag.begin(); it3 != Tag.end(); ++it3) {
                                 unsigned int id3 = (*it3)[0];
-                                if ((Distance(mesh, (*it3)[0], (*it2)[0]) <= (Lato/d_d + eps)) && (Distance(mesh, (*it3)[0], (*it)[0]) <= (Lato/d_d + 0.000001)) && (*it3)[0] != (*it2)[0] && (*it3)[0] != (*it)[0]){                    
+                                if ((Distance(mesh, (*it3)[0], (*it2)[0]) <= (Lato/d_d + eps)) && (Distance(mesh, (*it3)[0], (*it)[0]) <= (Lato/d_d + eps)) && (*it3)[0] != (*it2)[0] && (*it3)[0] != (*it)[0]){                    
                                     x = (mesh.Cell0DsCoordinates(0, id1) + mesh.Cell0DsCoordinates(0, id2) + mesh.Cell0DsCoordinates(0, id3)) / 3;
                                     y = (mesh.Cell0DsCoordinates(1, id1) + mesh.Cell0DsCoordinates(1, id2) + mesh.Cell0DsCoordinates(1, id3)) / 3;
                                     z = (mesh.Cell0DsCoordinates(2, id1) + mesh.Cell0DsCoordinates(2, id2) + mesh.Cell0DsCoordinates(2, id3)) / 3;
