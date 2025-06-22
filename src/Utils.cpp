@@ -976,9 +976,9 @@ for (auto it = path.begin(); next(it) != path.end(); ++it) {
         }
     }
 
-    if (!trovato) {
-        cerr << "Arco (" << u << "," << v << ") non trovato tra gli archi.\n";
-    }
+    //if (!trovato) {
+        //cerr << "Arco (" << u << "," << v << ") non trovato tra gli archi.\n";
+    //}
 }
 
 // stampa gli ID degli archi del cammino minimo
