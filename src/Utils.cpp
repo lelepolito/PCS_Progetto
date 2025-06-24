@@ -16,7 +16,7 @@ using namespace Eigen;
 
 namespace PolygonalLibrary 
 {
-double eps = sqrt(2.2e-15) * 10 ; // tolleranza per la distanza tra i punti data dalla radice della macchina epsilon moltiplicata per 10 
+double eps = sqrt(2.2e-16) * 10 ; // tolleranza per la distanza tra i punti data dalla radice della macchina epsilon moltiplicata per 10 
     // calcola la distanza tra due punti 
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 {
@@ -662,7 +662,7 @@ void CreateDualFaces(const PolyhedralMesh& originalMesh, PolyhedralMesh& dualMes
             const vector<unsigned int>& faceVertices = originalMesh.Cell2DsVertices[faceId];
             
             // Controlla se il vertice appartiene a questa faccia
-            if (find(faceVertices.begin(), faceVertices.end(), vertexId) != faceVertices.end() || *faceVertices.end() == vertexId) {
+            if (find(faceVertices.begin(), faceVertices.end(), vertexId) != faceVertices.end()) {
                 incidentFaces.push_back(faceId);
             }
         }
