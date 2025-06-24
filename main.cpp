@@ -21,9 +21,7 @@ int main() {
     //   p*10 + q --> basename dei file CSV
     const map<int, string> schlafiMap = {
         {33, "db/tetrahedron"},
-        {43, "db/cube"},
         {34, "db/octahedron"},
-        {53, "db/dodecahedron"},
         {35, "db/icosahedron"}
     };
 
