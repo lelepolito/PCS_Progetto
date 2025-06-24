@@ -16,7 +16,7 @@ using namespace Eigen;
 
 namespace PolygonalLibrary 
 {
-double eps = sqrt(2.2e-15) * 10; // tolleranza per la distanza tra i punti data dalla radice della macchina epsilon moltiplicata per 10 
+double eps = sqrt(2.2e-15) * 10 ; // tolleranza per la distanza tra i punti data dalla radice della macchina epsilon moltiplicata per 10 
     // calcola la distanza tra due punti 
 double Distance(PolyhedralMesh& mesh, unsigned int id1, unsigned int id2)
 {

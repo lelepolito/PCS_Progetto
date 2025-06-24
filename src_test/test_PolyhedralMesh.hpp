@@ -411,3 +411,152 @@ TEST(BfsShortestPathTest, Grafo12Nodi_PercorsoPiuBreveUnico) {
 	EXPECT_EQ(actual_path, expected_path);
 }
 
+
+TEST(TestPolyhedron, TestCalculateFaceCentroids)
+{
+    PolyhedralMesh originalMesh;
+    
+    // Setup di un tetraedro semplice
+    originalMesh.NumCell0Ds = 4;
+    originalMesh.Cell0DsCoordinates.resize(3, 4);
+    originalMesh.Cell0DsCoordinates << 0.0, 1.0, 0.0, 0.0,  // x coordinates
+                                       0.0, 0.0, 1.0, 0.0,  // y coordinates  
+                                       0.0, 0.0, 0.0, 1.0;  // z coordinates
+    
+    // Setup delle facce del tetraedro
+    originalMesh.NumCell2Ds = 4;
+    originalMesh.Cell2DsVertices.resize(4);
+    originalMesh.Cell2DsVertices[0] = {0, 1, 2}; // faccia base
+    originalMesh.Cell2DsVertices[1] = {0, 1, 3}; // faccia laterale 1
+    originalMesh.Cell2DsVertices[2] = {0, 2, 3}; // faccia laterale 2
+    originalMesh.Cell2DsVertices[3] = {1, 2, 3}; // faccia laterale 3
+    
+    PolyhedralMesh dualMesh;
+    CalculateFaceCentroids(originalMesh, dualMesh);
+    
+    // Verifica che il numero di vertici duali sia uguale al numero di facce originali
+    EXPECT_EQ(dualMesh.NumCell0Ds, 4);
+    
+    // Verifica il baricentro della prima faccia (0,1,2)
+    // Baricentro = ((0+1+0)/3, (0+0+1)/3, (0+0+0)/3) = (1/3, 1/3, 0)
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(0, 0), 1.0/3.0, 1e-10);
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(1, 0), 1.0/3.0, 1e-10);
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(2, 0), 0.0, 1e-10);
+    
+    // Verifica il baricentro della seconda faccia (0,1,3)
+    // Baricentro = ((0+1+0)/3, (0+0+0)/3, (0+0+1)/3) = (1/3, 0, 1/3)
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(0, 1), 1.0/3.0, 1e-10);
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(1, 1), 0.0, 1e-10);
+    EXPECT_NEAR(dualMesh.Cell0DsCoordinates(2, 1), 1.0/3.0, 1e-10);
+}
+
+TEST(TestPolyhedron, TestCreateDualEdges)
+{
+    PolyhedralMesh originalMesh;
+    
+    // Setup di un tetraedro con edge e facce
+    originalMesh.NumCell0Ds = 4;
+    originalMesh.NumCell1Ds = 6;
+    originalMesh.Cell1DsId = {0, 1, 2, 3, 4, 5};
+    originalMesh.Cell1DsExtrema.resize(2, 6);
+    originalMesh.Cell1DsExtrema << 0, 0, 0, 1, 1, 2,  // origine degli edge
+                                   1, 2, 3, 2, 3, 3;  // fine degli edge
+    
+    originalMesh.NumCell2Ds = 4;
+    originalMesh.Cell2DsEdges.resize(4);
+    originalMesh.Cell2DsEdges[0] = {0, 1, 3}; // faccia 0 usa edge 0,1,3
+    originalMesh.Cell2DsEdges[1] = {0, 2, 4}; // faccia 1 usa edge 0,2,4
+    originalMesh.Cell2DsEdges[2] = {1, 2, 5}; // faccia 2 usa edge 1,2,5
+    originalMesh.Cell2DsEdges[3] = {3, 4, 5}; // faccia 3 usa edge 3,4,5
+    
+    PolyhedralMesh dualMesh;
+    dualMesh.NumCell0Ds = 4; // Simuliamo che abbiamo già i baricentri
+    
+    CreateDualEdges(originalMesh, dualMesh);
+    
+    // Ogni edge originale condiviso da 2 facce dovrebbe creare un edge duale
+    EXPECT_EQ(dualMesh.NumCell1Ds, 6);
+    
+    // Verifica che gli ID degli edge duali corrispondano agli edge originali
+    for (unsigned int i = 0; i < 6; ++i) {
+        EXPECT_EQ(dualMesh.Cell1DsId[i], i);
+    }
+    
+    // Verifica che ogni edge duale connetta due facce (baricentri)
+    for (unsigned int i = 0; i < dualMesh.NumCell1Ds; ++i) {
+        unsigned int face1 = dualMesh.Cell1DsExtrema(0, i);
+        unsigned int face2 = dualMesh.Cell1DsExtrema(1, i);
+        EXPECT_LT(face1, 4); // Deve essere un ID di faccia valido
+        EXPECT_LT(face2, 4); // Deve essere un ID di faccia valido
+        EXPECT_NE(face1, face2); // Le due facce devono essere diverse
+    }
+}
+
+TEST(TestPolyhedron, TestCreateDualFaces)
+{
+    PolyhedralMesh originalMesh;
+    
+    // Setup di un tetraedro
+    originalMesh.NumCell0Ds = 4;
+    originalMesh.NumCell2Ds = 4;
+    originalMesh.Cell2DsVertices.resize(4);
+    originalMesh.Cell2DsVertices[0] = {0, 1, 2}; // vertice 0,1,2 appartengono alla faccia 0
+    originalMesh.Cell2DsVertices[1] = {0, 1, 3}; // vertice 0,1,3 appartengono alla faccia 1
+    originalMesh.Cell2DsVertices[2] = {0, 2, 3}; // vertice 0,2,3 appartengono alla faccia 2
+    originalMesh.Cell2DsVertices[3] = {1, 2, 3}; // vertice 1,2,3 appartengono alla faccia 3
+    
+    PolyhedralMesh dualMesh;
+    // Setup dei baricentri (simula CalculateFaceCentroids già eseguita)
+    dualMesh.NumCell0Ds = 4;
+    dualMesh.Cell0DsCoordinates.resize(3, 4);
+    dualMesh.Cell0DsCoordinates << 0.33, 0.33, 0.33, 0.67,
+                                   0.33, 0.0,  0.67, 0.33,
+                                   0.0,  0.33, 0.33, 0.33;
+    
+    CreateDualFaces(originalMesh, dualMesh);
+    
+    // Dovrebbe creare una faccia duale per ogni vertice originale
+    EXPECT_EQ(dualMesh.NumCell2Ds, 4);
+    
+    // Verifica che ogni faccia duale abbia almeno 3 vertici
+    for (unsigned int i = 0; i < dualMesh.NumCell2Ds; ++i) {
+        EXPECT_GE(dualMesh.Cell2DsVertices[i].size(), 3);
+    }
+    
+    // Verifica che il vertice 0 (che in un tetraedro appartiene a 4 facce) 
+    // generi una faccia duale con 4 baricentri
+    EXPECT_EQ(dualMesh.Cell2DsVertices[0].size(), 4);
+    
+    // Gli ID delle facce duali dovrebbero corrispondere agli ID dei vertici originali
+    for (unsigned int i = 0; i < dualMesh.NumCell2Ds; ++i) {
+        EXPECT_EQ(dualMesh.Cell2DsId[i], i);
+    }
+}
+
+TEST(TestPolyhedron, TestOrderDualFaceVertices)
+{
+    PolyhedralMesh dualMesh;
+    
+    // Setup di un triangolo semplice nel piano XY
+    dualMesh.NumCell0Ds = 3;
+    dualMesh.Cell0DsCoordinates.resize(3, 3);
+    dualMesh.Cell0DsCoordinates << 1.0, 0.0, -1.0,  // x coordinates
+                                   0.0, 1.0,  0.0,  // y coordinates
+                                   0.0, 0.0,  0.0;  // z coordinates (piano XY)
+    
+    vector<unsigned int> faceVertices = {0, 1, 2};
+    vector<unsigned int> ordered = OrderDualFaceVertices(faceVertices, dualMesh);
+    
+    // Dovrebbe restituire lo stesso numero di vertici
+    EXPECT_EQ(ordered.size(), 3);
+    
+    // Tutti i vertici originali dovrebbero essere presenti
+    for (unsigned int id : faceVertices) {
+        EXPECT_NE(find(ordered.begin(), ordered.end(), id), ordered.end());
+    }
+    
+    // Test con vettore vuoto
+    vector<unsigned int> empty;
+    vector<unsigned int> orderedEmpty = OrderDualFaceVertices(empty, dualMesh);
+    EXPECT_TRUE(orderedEmpty.empty());
+}
