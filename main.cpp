@@ -98,7 +98,7 @@ int main() {
     }
 
 if (search == true) {
-    // costruisce lista di adiacenza (popola adjacency)
+    // costruisce lista di adiacenza
     unordered_map<unsigned int, unordered_set<unsigned int>> adjacency = buildAdjacencyList(mesh.Cell2DsVertices);
 
     cout << "Lista di adiacenza:\n";
@@ -127,7 +127,7 @@ if (search == true) {
                                           mesh.NumCell1Ds, mesh.Cell1DsExtrema);
 
         
-    //shortPath property
+    //proprietà shortPath per paraview
     vector<Gedim::UCDProperty<double>> points_properties;
     vector<Gedim::UCDProperty<double>> segmnents_properties;
     points_properties.reserve(1); //We have only one Property
@@ -136,7 +136,7 @@ if (search == true) {
     vector<double> prop_vert(mesh.NumCell0Ds, 0.0);
     vector<double> prop_edges(mesh.NumCell1Ds, 0.0);
 
-    //Fill the struct points_properties
+    //proprietà dei vertici
     Gedim::UCDProperty<double> pointP;
     pointP.Label = "ShortPath";
     pointP.NumComponents = 1;
@@ -144,7 +144,7 @@ if (search == true) {
     points_properties.push_back(pointP);
 
 
-    //Fill the struct segments_properties
+    //proprietà degli spigoli
    Gedim::UCDProperty<double> edgeP;
    edgeP.Label = "ShortPath";
    edgeP.NumComponents = 1;
