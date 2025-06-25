@@ -130,7 +130,7 @@ if (search == true) {
     //proprietà shortPath per paraview
     vector<Gedim::UCDProperty<double>> points_properties;
     vector<Gedim::UCDProperty<double>> segmnents_properties;
-    points_properties.reserve(1); //We have only one Property
+    points_properties.reserve(1); //abbiamo un solo tipo di proprietà
     segmnents_properties.reserve(1);
 
     vector<double> prop_vert(mesh.NumCell0Ds, 0.0);
